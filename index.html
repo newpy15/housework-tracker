@@ -1,122 +1,440 @@
+<!doctype html>
+<html lang="ko" data-skin="mint">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>집안일 기록장</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#e9f5f1" id="themeColor">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="집안일">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-/* Layout: month calendar on top, the selected day's chore checklist below */
-:root {
-  --bg: #f3f5f4;
-  --surface: #ffffff;
-  --fg: #1c2a2a;
-  --muted: #667573;
-  --line: #dde4e2;
-  --accent: #1f7a6d;
-  --accent-fg: #ffffff;
-  --accent-soft: #dff0ec;
-  --sun: #c8452f;
-  --sat: #3b6fb0;
+/* Skins: 4 color/background/music sets, switched by html[data-skin]. Layout: big calendar, tap a date → bottom sheet. */
+:root, html[data-skin="mint"] {
+  --bg: #eef6f3; --page: radial-gradient(circle at 10% 4%, rgba(255, 246, 196, .85), transparent 28%), linear-gradient(165deg, #d9efe8 0%, #f0f7f1 55%, #d3e9df 100%);
+  --surface-rgb: 255, 255, 255; --surface: rgba(var(--surface-rgb), var(--alpha, .62)); --fg: #1c2a2a; --muted: #667573; --line: #dde4e2;
+  --accent: #1f7a6d; --accent-fg: #ffffff; --accent-soft: #dff0ec; --sun: #c8452f; --sat: #3b6fb0;
   --f-display: "Do Hyeon", "Noto Sans KR", sans-serif;
   --f-body: "Noto Sans KR", system-ui, sans-serif;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121a19; --surface: #1b2625; --fg: #e6efed; --muted: #93a6a3; --line: #2b3a38;
-    --accent: #55c2af; --accent-fg: #0d1f1c; --accent-soft: #1d3a35; --sun: #ff8b73; --sat: #7fadea;
-    color-scheme: dark;
-  }
+html[data-skin="cream"] {
+  --bg: #f8eedd; --page: linear-gradient(165deg, #fbeed6 0%, #f4dcbd 60%, #efcfa8 100%);
+  --surface-rgb: 255, 250, 241; --fg: #3a2a1c; --muted: #8a7560; --line: #e8d7bf;
+  --accent: #b45f27; --accent-fg: #ffffff; --accent-soft: #f6dcc3; --sun: #c0392b; --sat: #3b6fb0;
 }
-:root[data-theme="dark"] {
-  --bg: #121a19; --surface: #1b2625; --fg: #e6efed; --muted: #93a6a3; --line: #2b3a38;
-  --accent: #55c2af; --accent-fg: #0d1f1c; --accent-soft: #1d3a35; --sun: #ff8b73; --sat: #7fadea;
+html[data-skin="night"] {
+  --bg: #121835;
+  --page: radial-gradient(circle at 84% 9%, #fff6d6 0 13px, rgba(255, 244, 200, .3) 14px 34px, rgba(255, 244, 200, .08) 35px 90px, transparent 91px), linear-gradient(170deg, #070b1f 0%, #141a48 60%, #232266 100%);
+  --surface-rgb: 24, 31, 70; --fg: #e8ebff; --muted: #9ba5d6; --line: #2e376e;
+  --accent: #a0acff; --accent-fg: #0b1030; --accent-soft: #2c3578; --sun: #ff9d8c; --sat: #8fb8ff;
   color-scheme: dark;
 }
-* { box-sizing: border-box; }
+html[data-skin="forest"] {
+  --bg: #e4efe7;
+  --page: radial-gradient(130% 34% at 15% 104%, #5d9473 0 62%, transparent 63%), radial-gradient(120% 30% at 88% 106%, #3f7a59 0 62%, transparent 63%), linear-gradient(180deg, #c3d7cb 0%, #b2cfbd 55%, #9fc3ae 100%);
+  --surface-rgb: 246, 253, 248; --fg: #15301f; --muted: #52705c; --line: #c3d9ca;
+  --accent: #2b7a4b; --accent-fg: #ffffff; --accent-soft: #cde5d4; --sun: #b8432f; --sat: #2f6aa8;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; min-height: 100%; background-color: var(--bg); background-image: var(--page); background-attachment: fixed; transition: background-color .4s; }
+button, .day { touch-action: manipulation; }
 body {
-  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
-  padding-block: 20px 48px;
+  margin: 0;
+  min-height: 100vh; min-height: 100dvh;
+  color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-main { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-h1 { font-family: var(--f-display); font-weight: 400; font-size: 28px; margin: 0; line-height: 1.1; }
+
+/* background decoration (behind everything) */
+body::before, body::after { content: ''; position: fixed; z-index: -1; pointer-events: none; display: none; }
+/* 사진 배경: backgrounds/<스킨>.jpg 또는 사용자가 고른 사진. 있으면 일러스트와 장식을 대신함 */
+.photo { --dim: .06; position: fixed; inset: 0; z-index: -2; display: none; pointer-events: none; background-size: cover; background-position: center; background-repeat: no-repeat; }
+html[data-skin="night"] .photo { --dim: .3; }
+html[data-skin="forest"] .photo { --dim: .1; }
+html[data-photo] .photo { display: block; }
+html[data-photo] .scene svg { display: none !important; }
+html[data-photo] body::before, html[data-photo] body::after { display: none !important; }
+
+/* 스킨별 풍경 일러스트 (SVG). 화면 아래에 맞춰 크게 깔고 살짝 움직임 */
+.scene svg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; display: none; pointer-events: none; }
+html[data-skin="mint"] .sc-mint, html[data-skin="cream"] .sc-cream, html[data-skin="night"] .sc-night, html[data-skin="forest"] .sc-forest { display: block; }
+.cl1 { animation: cloud 48s ease-in-out infinite alternate; }
+.cl2 { animation: cloud 62s ease-in-out infinite alternate-reverse; }
+.cl3 { animation: cloud 75s ease-in-out infinite alternate; }
+.glow { animation: glow 6s ease-in-out infinite alternate; }
+.leaf { transform-origin: 316px 380px; animation: leaf 5s ease-in-out infinite alternate; }
+.steam { animation: steam 4s ease-in-out infinite; }
+.steam.s2 { animation-delay: -2s; }
+.beam { animation: sway 14s ease-in-out infinite alternate; }
+.beam.b2 { animation-duration: 19s; animation-direction: alternate-reverse; }
+.ff { animation: ff 5s ease-in-out infinite; }
+.ff.f2 { animation-delay: -1s; } .ff.f3 { animation-delay: -2s; } .ff.f4 { animation-delay: -3s; } .ff.f5 { animation-delay: -4s; } .ff.f6 { animation-delay: -2.5s; }
+.shoot { opacity: 0; animation: shoot 14s linear infinite; }
+.fog { animation: fog 30s ease-in-out infinite alternate; }
+.fog.f2 { animation-duration: 38s; animation-direction: alternate-reverse; }
+html[data-skin="night"] body::before, html[data-skin="night"] body::after {
+  display: block; inset: 0;
+  background-image: radial-gradient(1.6px 1.6px at 20px 30px, #fff, transparent), radial-gradient(1px 1px at 90px 60px, #fff, transparent), radial-gradient(1.6px 1.6px at 150px 120px, #cfd8ff, transparent), radial-gradient(1px 1px at 60px 160px, #fff, transparent), radial-gradient(1.2px 1.2px at 190px 190px, #e6e9ff, transparent);
+  background-size: 220px 220px; animation: twinkle 4s ease-in-out infinite;
+}
+html[data-skin="night"] body::after { background-size: 290px 290px; background-position: 70px 40px; animation-duration: 6s; animation-delay: -2s; }
+html[data-skin="forest"] body::before, html[data-skin="forest"] body::after {
+  display: block; left: 0; right: 0; top: -140px; bottom: 0; opacity: .6;
+  background: repeating-linear-gradient(90deg, transparent 0 23px, rgba(43, 122, 75, .45) 23px 24.5px);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 70px);
+  mask-image: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 70px);
+  animation: rain .9s linear infinite;
+}
+html[data-skin="forest"] body::after {
+  background: repeating-linear-gradient(90deg, transparent 0 37px, rgba(43, 122, 75, .35) 37px 38.2px);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 18px, transparent 18px 83px);
+  mask-image: repeating-linear-gradient(180deg, #000 0 18px, transparent 18px 83px);
+  animation: rain2 1.3s linear infinite;
+}
+@keyframes cloud { from { transform: translateX(-40px); } to { transform: translateX(60px); } }
+@keyframes glow { from { opacity: .7; } to { opacity: 1; } }
+@keyframes leaf { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+@keyframes steam { 0% { opacity: 0; transform: translateY(6px); } 50% { opacity: .75; } 100% { opacity: 0; transform: translateY(-10px); } }
+@keyframes sway { from { opacity: .55; transform: translateX(-4%); } to { opacity: 1; transform: translateX(4%); } }
+@keyframes ff { 0%, 100% { opacity: .1; transform: translate(0, 0); } 50% { opacity: 1; transform: translate(8px, -10px); } }
+@keyframes shoot { 0% { opacity: 0; transform: translate(0, 0); } 2% { opacity: 1; } 8% { opacity: 0; transform: translate(-170px, 95px); } 100% { opacity: 0; } }
+@keyframes fog { from { transform: translateX(-40px); } to { transform: translateX(40px); } }
+@keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@keyframes rain { to { transform: translateY(70px); } }
+@keyframes rain2 { to { transform: translateY(83px); } }
+@media (prefers-reduced-motion: reduce) { body::before, body::after, .scene * { animation: none !important; } }
+
+main {
+  max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px;
+  /* 첫 화면에서 달력이 남는 높이를 모두 차지하도록 */
+  min-height: calc(100vh - 40px);
+  min-height: calc(100dvh - max(20px, env(safe-area-inset-top, 0px)) - max(16px, env(safe-area-inset-bottom, 0px)));
+}
+h1 { font-family: var(--f-display); font-weight: 400; font-size: 24px; margin: 0; line-height: 1.1; white-space: nowrap; }
 button { font: inherit; cursor: pointer; color: inherit; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.cal { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tools { display: flex; align-items: center; gap: 6px; }
+.ibtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 18px; line-height: 1; padding: 0; }
+.ibtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); }
+
+/* --- calendar --- */
+.seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 2px; }
+.seg button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: none; font-size: 14px; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.cal { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; touch-action: pan-y; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+#calBody { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .cal-title { font-family: var(--f-display); font-size: 20px; }
 .nav { display: flex; gap: 4px; align-items: center; }
 .nav button { min-width: 40px; min-height: 40px; border-radius: 10px; border: 1px solid var(--line); background: none; font-size: 16px; }
 .nav .today-btn { padding: 0 12px; font-size: 13px; font-weight: 700; }
-.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
-.dow { text-align: center; font-size: 12px; color: var(--muted); padding: 2px 0 4px; }
-.dow:first-child, .day.sun { color: var(--sun); }
-.dow:nth-child(7), .day.sat { color: var(--sat); }
-.day { aspect-ratio: 1 / 1.05; max-height: 56px; border: 0; background: none; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-variant-numeric: tabular-nums; font-size: 14px; position: relative; }
+
+/* month grid */
+.dows, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.grid { flex: 1; grid-auto-rows: minmax(0, 1fr); }
+.dow { text-align: center; font-size: 13px; color: var(--muted); padding: 2px 0 8px; }
+.dow:first-child, .day.sun .num { color: var(--sun); }
+.dow:nth-child(7), .day.sat .num { color: var(--sat); }
+.day { min-height: 0; border: 0; background: none; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; padding-top: 10px; font-variant-numeric: tabular-nums; font-size: 17px; transition: background-color .2s, color .2s; }
 .day.blank { visibility: hidden; }
-.day:disabled { opacity: 0.35; cursor: default; }
-.day.today .num { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--accent); border-radius: 99px; padding: 0 7px; }
-.day.sel { background: var(--accent); color: var(--accent-fg); }
-.day.sel.today .num { box-shadow: inset 0 0 0 1.5px var(--accent-fg); }
-.dots { display: flex; gap: 2px; height: 5px; }
-.dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-.day.sel .dots i { background: var(--accent-fg); }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
-.panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.day.part { background: var(--accent-soft); }
+.day.done { background: var(--accent); color: var(--accent-fg); }
+.day.done .num { color: var(--accent-fg); }
+.day.today .num { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.day.sel { box-shadow: 0 0 0 2px var(--fg); }
+.dots { display: flex; gap: 3px; height: 7px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.dots i.d { background: var(--accent); box-shadow: none; }
+.day.done .dots i.d { background: var(--accent-fg); }
+
+/* week rows */
+.week { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.wrow { flex: 1; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; transition: background-color .2s, border-color .2s; }
+.wrow.part { background: var(--accent-soft); }
+.wrow.done { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.wrow.sel { box-shadow: 0 0 0 2px var(--fg); }
+.wdate { flex: none; width: 36px; text-align: center; line-height: 1.15; }
+.wdate b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 20px; }
+.wdate span { font-size: 12px; color: var(--muted); }
+.wrow.sun .wdate span, .wrow.sun .wdate b { color: var(--sun); }
+.wrow.sat .wdate span, .wrow.sat .wdate b { color: var(--sat); }
+.wrow.done .wdate span, .wrow.done .wdate b { color: var(--accent-fg); }
+.wrow.today .wdate b { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-size: 12.5px; padding: 1px 9px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.chip.d { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.wrow.done .chip.d { background: var(--accent-fg); border-color: var(--accent-fg); color: var(--accent); }
+.none { font-size: 13px; color: var(--muted); }
+.wrow.done .none { color: var(--accent-fg); }
+
+/* --- bottom sheets (day / skin) --- */
+.scrim { position: fixed; inset: 0; z-index: 10; background: rgba(0, 0, 0, .4); opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; }
+.scrim.open { opacity: 1; visibility: visible; }
+.scrim.lite { background: rgba(0, 0, 0, .06); }   /* 꾸미기 창: 달력이 바로 보이게 */
+.sheet {
+  position: fixed; z-index: 20; bottom: 0; left: 50%; width: min(100%, 520px); max-height: 88vh; max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+  transform: translate(-50%, 100%); visibility: hidden; transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility .3s;
+  background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0;
+  padding: 8px 14px max(18px, env(safe-area-inset-bottom, 0px)); box-shadow: 0 -8px 30px rgba(0, 0, 0, .18);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.sheet.open { transform: translate(-50%, 0); visibility: visible; }
+.grab { align-self: center; width: 40px; height: 4px; border-radius: 99px; background: var(--line); flex: none; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ph-text { min-width: 0; }
+.ph-btns { display: flex; gap: 4px; flex: none; }
+.ph-btns button { min-width: 40px; min-height: 40px; border-radius: 10px; border: 1px solid var(--line); background: none; font-size: 16px; }
 .panel-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 20px; }
 .count { font-size: 13px; color: var(--muted); }
+.bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s; }
 ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .item { display: flex; align-items: center; gap: 8px; }
-.check { flex: 1; min-width: 0; min-height: 52px; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; }
-.check[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
-.box { flex: none; width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--muted); display: grid; place-items: center; font-size: 15px; line-height: 1; color: transparent; }
-.check[aria-pressed="true"] .box { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.check { flex: 1; min-width: 0; min-height: 54px; display: flex; align-items: center; gap: 12px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; transition: background-color .2s, border-color .2s, color .2s; }
+.check[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.box { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; color: transparent; transition: background-color .2s, border-color .2s; }
+.check[aria-pressed="true"] .box { background: var(--accent-fg); border-color: var(--accent-fg); color: var(--accent); }
 .txt { flex: 1; min-width: 0; }
 .name { font-weight: 700; overflow-wrap: anywhere; }
+.check[aria-pressed="true"] .name { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .last { font-size: 12.5px; color: var(--muted); }
-.del { flex: none; min-height: 44px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: none; font-size: 13px; color: var(--sun); }
-.edit-toggle { background: none; border: 0; color: var(--muted); font-size: 13px; min-height: 36px; padding: 0 6px; }
+.check[aria-pressed="true"] .last { color: var(--accent-fg); opacity: .85; }
+.del { flex: none; min-width: 44px; min-height: 44px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--line); background: none; font-size: 13px; color: var(--muted); }
+.del.sure { color: var(--sun); border-color: var(--sun); }
 .add { display: flex; gap: 8px; }
-input { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-height: 44px; min-width: 0; flex: 1; }
+input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가 입력 시 화면을 확대함 */ color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-height: 44px; min-width: 0; flex: 1; }
 .add button { flex: none; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.sugg { display: flex; flex-wrap: wrap; gap: 6px; }
+.sugg button { min-height: 34px; padding: 0 12px; border-radius: 99px; border: 1px dashed var(--muted); background: none; font-size: 13px; color: var(--muted); }
 .empty { color: var(--muted); font-size: 14px; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; max-width: calc(100% - 32px); }
+
+/* skin picker */
+.skins { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.skin { text-align: left; padding: 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+.skin[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.sw { height: 64px; border-radius: 9px; display: grid; place-items: center; font-size: 28px; }
+.skin b { font-size: 15px; }
+.skin small { display: block; font-size: 12px; color: var(--muted); line-height: 1.3; }
+.music { display: flex; align-items: center; gap: 12px; }
+.mbtn { flex: none; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; }
+.mbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.music input[type="range"], .opac input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.opac { display: flex; align-items: center; gap: 12px; }
+.opac label { flex: none; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.opac b { display: inline-block; min-width: 2.2em; text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); }
+.photo-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.hint { margin: 0; font-size: 12px; color: var(--muted); }
+
+.toast { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); top: calc(16px + env(safe-area-inset-top, 0px)); background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; max-width: calc(100% - 32px); }
 </style>
+</head>
+<body>
 
 <main>
-  <h1>집안일 기록장</h1>
+  <div class="top">
+    <h1>집안일 기록장</h1>
+    <div class="tools">
+      <button type="button" class="ibtn" id="skinBtn" aria-label="꾸미기 (배경·음악)">🎨</button>
+      <button type="button" class="ibtn" id="soundBtn" aria-pressed="false" aria-label="배경음악 켜기">🔇</button>
+      <div class="seg" role="group" aria-label="보기 방식">
+        <button type="button" id="mWeek" aria-pressed="false">주</button>
+        <button type="button" id="mMonth" aria-pressed="true">월</button>
+      </div>
+    </div>
+  </div>
 
-  <section class="cal" aria-label="달력">
+  <section class="cal" id="cal" aria-label="달력">
     <div class="cal-head">
       <div class="cal-title" id="calTitle"></div>
       <div class="nav">
-        <button type="button" id="prev" aria-label="이전 달">‹</button>
+        <button type="button" id="prev" aria-label="이전">‹</button>
         <button type="button" id="todayBtn" class="today-btn">오늘</button>
-        <button type="button" id="next" aria-label="다음 달">›</button>
+        <button type="button" id="next" aria-label="다음">›</button>
       </div>
     </div>
-    <div class="grid" id="grid"></div>
+    <div id="calBody"></div>
   </section>
+</main>
 
-  <section class="panel" aria-live="polite">
-    <div class="panel-head">
+<div class="photo" id="photo" aria-hidden="true"></div>
+<div class="scene" aria-hidden="true">
+
+  <!-- 🌿 민트: 아침 언덕 -->
+  <svg class="sc sc-mint" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9e5dd"/><stop offset=".5" stop-color="#e6f5ec"/><stop offset="1" stop-color="#fff4d6"/></linearGradient>
+      <radialGradient id="mSun"><stop offset="0" stop-color="#fff6c4" stop-opacity=".95"/><stop offset="1" stop-color="#fff6c4" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="400" height="800" fill="url(#mSky)"/>
+    <circle class="glow" cx="320" cy="118" r="130" fill="url(#mSun)"/>
+    <circle cx="320" cy="118" r="38" fill="#fff3b0"/>
+    <g class="cl cl1" fill="#fff" opacity=".9"><ellipse cx="86" cy="150" rx="46" ry="13"/><ellipse cx="116" cy="139" rx="30" ry="16"/><ellipse cx="58" cy="141" rx="24" ry="11"/></g>
+    <g class="cl cl2" fill="#fff" opacity=".8"><ellipse cx="250" cy="250" rx="42" ry="11"/><ellipse cx="272" cy="241" rx="26" ry="13"/><ellipse cx="228" cy="243" rx="20" ry="9"/></g>
+    <g class="cl cl3" fill="#fff" opacity=".7"><ellipse cx="60" cy="350" rx="38" ry="10"/><ellipse cx="84" cy="342" rx="22" ry="11"/></g>
+    <path d="M0 560 C70 520 150 540 230 556 S350 540 400 520 V800 H0Z" fill="#c5e9d9"/>
+    <g>
+      <rect x="298" y="540" width="4" height="16" fill="#8a6a50"/><circle cx="300" cy="534" r="14" fill="#8fd0b5"/>
+      <rect x="338" y="534" width="4" height="14" fill="#8a6a50"/><circle cx="340" cy="528" r="11" fill="#8fd0b5"/>
+    </g>
+    <path d="M0 612 C90 576 170 602 250 614 S360 596 400 586 V800 H0Z" fill="#9dd5bd"/>
+    <g>
+      <rect x="58" y="588" width="5" height="20" fill="#7d5f48"/><circle cx="60" cy="580" r="17" fill="#6fbd9f"/>
+      <rect x="98" y="596" width="4" height="16" fill="#7d5f48"/><circle cx="100" cy="590" r="12" fill="#6fbd9f"/>
+    </g>
+    <path d="M0 662 C80 640 160 666 240 672 S350 652 400 646 V800 H0Z" fill="#6dbea0"/>
+    <path d="M0 724 C100 702 200 732 300 722 S380 708 400 712 V800 H0Z" fill="#4da787"/>
+    <g>
+      <circle cx="40" cy="738" r="3.5" fill="#fff"/><circle cx="62" cy="752" r="3" fill="#ffd6e0"/><circle cx="120" cy="744" r="3.5" fill="#fff6a8"/>
+      <circle cx="210" cy="752" r="3" fill="#fff"/><circle cx="262" cy="742" r="3.5" fill="#ffd6e0"/><circle cx="330" cy="750" r="3" fill="#fff"/><circle cx="372" cy="736" r="3.5" fill="#fff6a8"/>
+    </g>
+  </svg>
+
+  <!-- ☕ 카페: 창가의 오후 -->
+  <svg class="sc sc-cream" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="cWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f9e8cb"/><stop offset="1" stop-color="#efcea2"/></linearGradient>
+      <linearGradient id="cGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f4"/><stop offset="1" stop-color="#fdf1d2"/></linearGradient>
+      <linearGradient id="cBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0be" stop-opacity=".6"/><stop offset="1" stop-color="#fff0be" stop-opacity="0"/></linearGradient>
+      <clipPath id="cClip"><rect x="68" y="78" width="264" height="324" rx="8"/></clipPath>
+    </defs>
+    <rect width="400" height="800" fill="url(#cWall)"/>
+    <rect x="56" y="66" width="288" height="348" rx="16" fill="#b57c4b"/>
+    <rect x="68" y="78" width="264" height="324" rx="8" fill="url(#cGlass)"/>
+    <g clip-path="url(#cClip)">
+      <circle cx="270" cy="150" r="30" fill="#fff6c8" opacity=".9"/>
+      <g class="cl cl1" fill="#fff" opacity=".95"><ellipse cx="130" cy="160" rx="40" ry="11"/><ellipse cx="156" cy="150" rx="24" ry="13"/></g>
+      <g class="cl cl2" fill="#fff" opacity=".85"><ellipse cx="230" cy="290" rx="38" ry="10"/><ellipse cx="252" cy="281" rx="22" ry="11"/></g>
+      <path d="M68 400 L68 330 L100 300 L130 330 L160 290 L200 330 L240 300 L290 340 L332 310 L332 402Z" fill="#a8cfae" opacity=".55"/>
+    </g>
+    <rect x="196" y="78" width="8" height="324" fill="#b57c4b"/>
+    <rect x="68" y="236" width="264" height="8" fill="#b57c4b"/>
+    <rect x="40" y="410" width="320" height="16" rx="6" fill="#a56a3c"/>
+    <path d="M0 40 H72 C76 150 60 280 66 430 C40 440 20 420 0 430Z" fill="#e8a583" opacity=".95"/>
+    <path d="M20 40 C26 160 18 290 22 428 M44 40 C50 160 40 290 46 432" stroke="#d98d6a" stroke-width="3" fill="none" opacity=".7"/>
+    <path d="M400 40 H328 C324 150 340 280 334 430 C360 440 380 420 400 430Z" fill="#e8a583" opacity=".95"/>
+    <path d="M380 40 C374 160 382 290 378 428 M356 40 C350 160 360 290 354 432" stroke="#d98d6a" stroke-width="3" fill="none" opacity=".7"/>
+    <g class="beam"><polygon points="92,412 300,412 392,800 8,800" fill="url(#cBeam)"/></g>
+    <g class="beam b2"><polygon points="210,412 320,412 400,720 250,720" fill="url(#cBeam)" opacity=".7"/></g>
+    <g>
+      <path d="M284 410 L292 380 H324 L332 410Z" fill="#c0623b"/>
+      <g class="leaf"><ellipse cx="300" cy="352" rx="8" ry="26" transform="rotate(-24 300 352)" fill="#6fa36a"/><ellipse cx="316" cy="348" rx="8" ry="28" transform="rotate(8 316 348)" fill="#5f9660"/><ellipse cx="330" cy="356" rx="7" ry="22" transform="rotate(30 330 356)" fill="#7db078"/></g>
+    </g>
+    <rect x="0" y="722" width="400" height="78" fill="#c58f5c"/>
+    <rect x="0" y="722" width="400" height="6" fill="#b17a49"/>
+    <g>
+      <path d="M278 716 H318 L314 692 H282Z" fill="#fffaf0"/><path d="M318 700 C332 700 332 712 316 712" stroke="#fffaf0" stroke-width="4" fill="none"/>
+      <rect x="280" y="692" width="36" height="5" fill="#8a5a3a"/>
+      <path class="steam" d="M292 686 C286 676 298 670 292 660" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path class="steam s2" d="M304 686 C298 676 310 670 304 660" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="62" y="704" width="70" height="18" rx="2" fill="#7d9cb8"/><rect x="68" y="688" width="60" height="16" rx="2" fill="#d9825b"/><rect x="74" y="674" width="50" height="14" rx="2" fill="#f0d99a"/>
+    </g>
+  </svg>
+
+  <!-- 🌙 별밤: 산과 달 -->
+  <svg class="sc sc-night" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="nSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050918"/><stop offset=".6" stop-color="#171d52"/><stop offset="1" stop-color="#3b3283"/></linearGradient>
+      <radialGradient id="nMoon"><stop offset="0" stop-color="#fff2c8" stop-opacity=".55"/><stop offset="1" stop-color="#fff2c8" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="400" height="800" fill="url(#nSky)"/>
+    <circle class="glow" cx="318" cy="120" r="110" fill="url(#nMoon)" opacity=".55"/>
+    <circle cx="318" cy="120" r="34" fill="#e3dcb8"/>
+    <circle cx="307" cy="112" r="7" fill="#cfc79c" opacity=".6"/><circle cx="328" cy="132" r="5" fill="#cfc79c" opacity=".6"/><circle cx="322" cy="105" r="3" fill="#cfc79c" opacity=".5"/>
+    <g class="shoot"><line x1="250" y1="60" x2="276" y2="46" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+    <path d="M0 560 L60 500 L110 540 L180 470 L250 540 L320 490 L400 550 V800 H0Z" fill="#262b6c"/>
+    <path d="M0 640 L80 580 L150 630 L230 570 L310 635 L400 590 V800 H0Z" fill="#1a1f58"/>
+    <g data-pines="night-mid"></g>
+    <path d="M0 710 L70 670 L140 706 L220 660 L300 710 L400 676 V800 H0Z" fill="#0e1238"/>
+    <g data-pines="night-near"></g>
+    <g fill="#fff3a0">
+      <circle class="ff" cx="70" cy="690" r="2.5"/><circle class="ff f2" cx="150" cy="730" r="2"/><circle class="ff f3" cx="240" cy="700" r="2.5"/>
+      <circle class="ff f4" cx="320" cy="745" r="2"/><circle class="ff f5" cx="30" cy="760" r="2"/><circle class="ff f6" cx="370" cy="700" r="2.5"/>
+    </g>
+  </svg>
+
+  <!-- 🌧️ 숲: 안개 낀 소나무숲 -->
+  <svg class="sc sc-forest" viewBox="0 0 400 800" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="fSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe0d6"/><stop offset="1" stop-color="#a3c6b0"/></linearGradient>
+    </defs>
+    <rect width="400" height="800" fill="url(#fSky)"/>
+    <g data-pines="forest-1"></g>
+    <ellipse class="fog" cx="200" cy="560" rx="260" ry="34" fill="#fff" opacity=".35"/>
+    <g data-pines="forest-2"></g>
+    <ellipse class="fog f2" cx="160" cy="640" rx="280" ry="38" fill="#fff" opacity=".3"/>
+    <g data-pines="forest-3"></g>
+    <ellipse class="fog" cx="260" cy="720" rx="260" ry="30" fill="#fff" opacity=".22"/>
+    <g data-pines="forest-4"></g>
+  </svg>
+
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<section class="sheet" id="daySheet" role="dialog" aria-modal="true" aria-labelledby="dayTitle">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="panel-head">
+    <div class="ph-text">
       <h2 id="dayTitle"></h2>
       <span class="count" id="dayCount"></span>
     </div>
-    <ul id="list"></ul>
-    <form class="add" id="addForm">
-      <input type="text" id="newName" placeholder="새 집안일 추가 (예: 에어컨 필터)" maxlength="30" aria-label="새 집안일 이름">
-      <button type="submit">추가</button>
-    </form>
-    <button type="button" class="edit-toggle" id="editToggle"></button>
-  </section>
-</main>
+    <div class="ph-btns">
+      <button type="button" id="prevDay" aria-label="전날">‹</button>
+      <button type="button" id="nextDay" aria-label="다음날">›</button>
+      <button type="button" data-close aria-label="닫기">✕</button>
+    </div>
+  </div>
+  <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+  <ul id="list" aria-live="polite"></ul>
+  <form class="add" id="addForm">
+    <input type="text" id="newName" placeholder="이 날 할 집안일 추가" maxlength="30" aria-label="집안일 이름">
+    <button type="submit">추가</button>
+  </form>
+  <div class="sugg" id="sugg"></div>
+</section>
+
+<section class="sheet" id="skinSheet" role="dialog" aria-modal="true" aria-labelledby="skinTitle">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="panel-head">
+    <h2 id="skinTitle">꾸미기</h2>
+    <div class="ph-btns"><button type="button" data-close aria-label="닫기">✕</button></div>
+  </div>
+  <div class="skins" id="skins"></div>
+  <div class="opac">
+    <label for="clear">카드 투명도 <b id="clearVal"></b></label>
+    <input type="range" id="clear" min="1" max="100" step="1">
+  </div>
+  <div class="photo-row">
+    <button type="button" class="mbtn" id="photoBtn">📷 내 사진으로 배경 바꾸기</button>
+    <button type="button" class="mbtn" id="photoReset" hidden>기본 배경으로</button>
+    <input type="file" id="photoFile" accept="image/*" hidden>
+  </div>
+  <div class="music">
+    <button type="button" class="mbtn" id="musicBtn" aria-pressed="false">♪ 음악 켜기</button>
+    <input type="range" id="vol" min="0" max="100" step="1" aria-label="음악 볼륨">
+  </div>
+  <p class="hint">음악은 앱이 직접 만들어 재생해서 따로 받은 파일이 없습니다. 폰이 무음 모드면 소리가 안 날 수 있어요.</p>
+</section>
+
 <div class="toast" id="toast" hidden></div>
 
 <script>
 (function () {
-  var KEY = 'housework-v2', OLD = 'housework-v1';
+  var KEY = 'housework-v3', OLD = 'housework-v2', UIKEY = 'housework-ui';
   var DEFAULTS = ['빨래', '화장실 청소', '침구 세탁', '바닥 청소기', '쓰레기통 비우기', '냉장고 정리', '설거지 · 싱크대 청소'];
   var WD = ['일', '월', '화', '수', '목', '금', '토'];
-  var mem = null, toastTimer = null, editing = false;
+  var mem = null, toastTimer = null;
 
   function iso(d) {
     var m = d.getMonth() + 1, day = d.getDate();
@@ -124,28 +442,31 @@ input { font: inherit; color: var(--fg); background: var(--bg); border: 1px soli
   }
   function parse(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
   function today() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
   function fmt(s) { var d = parse(s); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + WD[d.getDay()] + ')'; }
 
-  // state: { next, chores:[{id,name}], days:{ 'YYYY-MM-DD': [ids] } }
+  // state: { next, mode:'month'|'week', names:[suggestions], days:{ 'YYYY-MM-DD': [{id,name,done}] } }
+  function fresh() { return { next: 1, mode: 'month', names: DEFAULTS.slice(), days: {} }; }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
       if (raw) return JSON.parse(raw);
-      var old = localStorage.getItem(OLD);
+      var old = localStorage.getItem(OLD);   // v2: 전역 집안일 목록 + 날짜별 완료 id → 날짜별 '완료' 항목으로 옮김
       if (old) {
-        var o = JSON.parse(old), s = { next: o.next, chores: [], days: {} };
-        o.chores.forEach(function (c) {
-          s.chores.push({ id: c.id, name: c.name });
-          c.log.forEach(function (d) { (s.days[d] = s.days[d] || []).push(c.id); });
+        var o = JSON.parse(old), s = fresh(), byId = {};
+        s.names = o.chores.map(function (c) { byId[c.id] = c.name; return c.name; });
+        Object.keys(o.days).forEach(function (d) {
+          var arr = [];
+          o.days[d].forEach(function (id) { if (byId[id]) arr.push({ id: s.next++, name: byId[id], done: true }); });
+          if (arr.length) s.days[d] = arr;
         });
         return s;
       }
     } catch (e) {}
-    return mem || { next: DEFAULTS.length + 1, chores: DEFAULTS.map(function (n, i) { return { id: i + 1, name: n }; }), days: {} };
+    return mem || fresh();
   }
   var state = load();
   var sel = iso(today());
-  var view = today(); view.setDate(1);
 
   function save() {
     mem = state;
@@ -164,109 +485,583 @@ input { font: inherit; color: var(--fg); background: var(--bg); border: 1px soli
     toastTimer = setTimeout(function () { t.hidden = true; }, 2000);
   }
 
-  function lastBefore(id, dateStr) {
+  function tasks(s) { return state.days[s] || []; }
+  function setTasks(s, arr) { if (arr.length) state.days[s] = arr; else delete state.days[s]; }
+  // none / open(전부 미완료) / part(일부 완료) / done(전부 완료)
+  function stat(s) {
+    var t = tasks(s), n = t.filter(function (x) { return x.done; }).length;
+    return !t.length ? 'none' : n === t.length ? 'done' : n ? 'part' : 'open';
+  }
+  function lastDone(name) {
     var best = null;
     Object.keys(state.days).forEach(function (d) {
-      if (d < dateStr && state.days[d].indexOf(id) !== -1 && (!best || d > best)) best = d;
+      if (d < sel && (!best || d > best) && state.days[d].some(function (x) { return x.name === name && x.done; })) best = d;
     });
     return best;
   }
-  function lastText(id) {
-    var l = lastBefore(id, sel);
-    if (!l) return '이전 기록 없음';
+  function lastText(name) {
+    var l = lastDone(name);
+    if (!l) return '이전 완료 기록 없음';
     var n = Math.round((parse(sel) - parse(l)) / 86400000);
-    return '마지막 ' + (n === 1 ? '하루 전' : n + '일 전') + ' · ' + fmt(l);
+    return '마지막 ' + (n === 1 ? '하루 전' : n + '일 전') + ' 완료 · ' + fmt(l);
+  }
+
+  /* ---------- calendar ---------- */
+  function dayClass(d, s) {
+    var dow = d.getDay();
+    return (dow === 0 ? ' sun' : dow === 6 ? ' sat' : '') + (s === iso(today()) ? ' today' : '') + (s === sel ? ' sel' : '') + ' ' + stat(s);
+  }
+  function label(s) {
+    var t = tasks(s), n = t.filter(function (x) { return x.done; }).length;
+    return fmt(s) + (t.length ? ', ' + t.length + '개 중 ' + n + '개 완료' : ', 집안일 없음');
+  }
+  function choose(s) { sel = s; render(); openSheet('day'); }
+
+  function renderMonth(body, c) {
+    var dows = el('div', 'dows'), grid = el('div', 'grid');
+    WD.forEach(function (w) { dows.appendChild(el('div', 'dow', w)); });
+    body.appendChild(dows);
+    var first = new Date(c.getFullYear(), c.getMonth(), 1);
+    var len = new Date(c.getFullYear(), c.getMonth() + 1, 0).getDate();
+    for (var b = 0; b < first.getDay(); b++) grid.appendChild(el('div', 'day blank'));
+    for (var n = 1; n <= len; n++) {
+      var d = new Date(c.getFullYear(), c.getMonth(), n), s = iso(d), t = tasks(s);
+      var btn = el('button', 'day' + dayClass(d, s));
+      btn.type = 'button';
+      btn.setAttribute('aria-label', label(s));
+      btn.appendChild(el('span', 'num', String(n)));
+      var dots = el('span', 'dots');
+      t.slice(0, 4).forEach(function (x) { dots.appendChild(el('i', x.done ? 'd' : '')); });
+      btn.appendChild(dots);
+      (function (s2) { btn.addEventListener('click', function () { choose(s2); }); })(s);
+      grid.appendChild(btn);
+    }
+    body.appendChild(grid);
+  }
+
+  function renderWeek(body, c) {
+    var start = addDays(c, -c.getDay()), wrap = el('div', 'week');
+    for (var i = 0; i < 7; i++) {
+      var d = addDays(start, i), s = iso(d), t = tasks(s);
+      var row = el('button', 'wrow' + dayClass(d, s));
+      row.type = 'button';
+      row.setAttribute('aria-label', label(s));
+      var dt = el('div', 'wdate');
+      dt.appendChild(el('b', null, String(d.getDate())));
+      dt.appendChild(el('span', null, WD[d.getDay()]));
+      row.appendChild(dt);
+      var chips = el('div', 'chips');
+      if (!t.length) chips.appendChild(el('span', 'none', '집안일 없음'));
+      t.forEach(function (x) { chips.appendChild(el('span', 'chip' + (x.done ? ' d' : ''), x.name)); });
+      row.appendChild(chips);
+      (function (s2) { row.addEventListener('click', function () { choose(s2); }); })(s);
+      wrap.appendChild(row);
+    }
+    body.appendChild(wrap);
   }
 
   function renderCal() {
-    document.getElementById('calTitle').textContent = view.getFullYear() + '년 ' + (view.getMonth() + 1) + '월';
-    var grid = document.getElementById('grid');
-    grid.textContent = '';
-    WD.forEach(function (w) { grid.appendChild(el('div', 'dow', w)); });
-    var first = new Date(view.getFullYear(), view.getMonth(), 1);
-    var len = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
-    for (var b = 0; b < first.getDay(); b++) grid.appendChild(el('div', 'day blank'));
-    var t = today(), ts = iso(t);
-    for (var n = 1; n <= len; n++) {
-      var d = new Date(view.getFullYear(), view.getMonth(), n), s = iso(d);
-      var cls = 'day' + (d.getDay() === 0 ? ' sun' : d.getDay() === 6 ? ' sat' : '') + (s === ts ? ' today' : '') + (s === sel ? ' sel' : '');
-      var btn = el('button', cls);
-      btn.type = 'button';
-      btn.disabled = d > t;
-      var ids = (state.days[s] || []).filter(function (id) { return state.chores.some(function (c) { return c.id === id; }); });
-      btn.setAttribute('aria-label', fmt(s) + (ids.length ? ', ' + ids.length + '건 완료' : ''));
-      btn.appendChild(el('span', 'num', String(n)));
-      var dots = el('span', 'dots');
-      for (var k = 0; k < Math.min(ids.length, 3); k++) dots.appendChild(document.createElement('i'));
-      btn.appendChild(dots);
-      (function (s2) { btn.addEventListener('click', function () { sel = s2; render(); }); })(s);
-      grid.appendChild(btn);
+    var c = parse(sel), body = document.getElementById('calBody');
+    body.textContent = '';
+    document.getElementById('mWeek').setAttribute('aria-pressed', state.mode === 'week');
+    document.getElementById('mMonth').setAttribute('aria-pressed', state.mode === 'month');
+    if (state.mode === 'month') {
+      document.getElementById('calTitle').textContent = c.getFullYear() + '년 ' + (c.getMonth() + 1) + '월';
+      renderMonth(body, c);
+    } else {
+      var a = addDays(c, -c.getDay()), z = addDays(a, 6);
+      document.getElementById('calTitle').textContent = (a.getMonth() + 1) + '월 ' + a.getDate() + '일 – ' + (z.getMonth() === a.getMonth() ? '' : (z.getMonth() + 1) + '월 ') + z.getDate() + '일';
+      renderWeek(body, c);
     }
   }
 
+  // 이전/다음: 월 보기는 한 달, 주 보기는 7일 이동 (선택 날짜도 같이 이동해서 항상 화면 안에 있게)
+  function shift(n) {
+    var c = parse(sel);
+    if (state.mode === 'week') { sel = iso(addDays(c, n * 7)); }
+    else {
+      var y = c.getFullYear(), m = c.getMonth() + n, last = new Date(y, m + 1, 0).getDate();
+      sel = iso(new Date(y, m, Math.min(c.getDate(), last)));
+    }
+    render();
+  }
+  function setMode(m) { state.mode = m; save(); render(); }
+
+  /* ---------- bottom sheets ---------- */
+  var sheets = { day: document.getElementById('daySheet'), skin: document.getElementById('skinSheet') };
+  var scrim = document.getElementById('scrim'), current = null;
+  function openSheet(name) {
+    if (current) return;
+    current = name;
+    sheets[name].classList.add('open'); scrim.classList.add('open');
+    scrim.classList.toggle('lite', name === 'skin');
+    document.body.style.overflow = 'hidden';
+    sheets[name].scrollTop = 0;
+    try { history.pushState({ sheet: 1 }, ''); } catch (e) {}   // 안드로이드 뒤로가기 버튼으로 시트만 닫히게
+  }
+  function closeSheet(fromPop) {
+    if (!current) return;
+    sheets[current].classList.remove('open'); scrim.classList.remove('open');
+    current = null;
+    document.body.style.overflow = '';
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    if (fromPop !== true && history.state && history.state.sheet) history.back();
+  }
+  window.addEventListener('popstate', function () { closeSheet(true); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+  scrim.addEventListener('click', function () { closeSheet(); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function (b) { b.addEventListener('click', function () { closeSheet(); }); });
+  document.getElementById('prevDay').addEventListener('click', function () { sel = iso(addDays(parse(sel), -1)); render(); });
+  document.getElementById('nextDay').addEventListener('click', function () { sel = iso(addDays(parse(sel), 1)); render(); });
+
+  /* ---------- selected day ---------- */
   function renderDay() {
-    var ids = state.days[sel] || [];
+    var t = tasks(sel), done = t.filter(function (x) { return x.done; }).length;
     document.getElementById('dayTitle').textContent = (sel === iso(today()) ? '오늘 · ' : '') + fmt(sel);
-    var done = state.chores.filter(function (c) { return ids.indexOf(c.id) !== -1; }).length;
-    document.getElementById('dayCount').textContent = done ? done + '개 했어요' : '기록 없음';
+    document.getElementById('dayCount').textContent = t.length ? done + '/' + t.length + ' 완료' : '집안일 없음';
+    document.getElementById('barFill').style.width = (t.length ? Math.round(done / t.length * 100) : 0) + '%';
     var list = document.getElementById('list');
     list.textContent = '';
-    if (!state.chores.length) list.appendChild(el('li', 'empty', '아래에서 집안일을 추가해 보세요.'));
-    state.chores.forEach(function (c) {
-      var on = ids.indexOf(c.id) !== -1;
+    if (!t.length) list.appendChild(el('li', 'empty', '이 날 할 집안일을 아래에서 추가해 보세요.'));
+    t.forEach(function (x) {
       var li = el('li', 'item');
       var b = el('button', 'check');
       b.type = 'button';
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.setAttribute('aria-pressed', x.done ? 'true' : 'false');
       b.appendChild(el('span', 'box', '✓'));
       var tx = el('span', 'txt');
-      tx.appendChild(el('div', 'name', c.name));
-      tx.appendChild(el('div', 'last', lastText(c.id)));
+      tx.appendChild(el('div', 'name', x.name));
+      tx.appendChild(el('div', 'last', x.done ? '완료 · 다시 누르면 취소' : lastText(x.name)));
       b.appendChild(tx);
-      b.addEventListener('click', function () {
-        var arr = state.days[sel] || [];
-        if (on) arr = arr.filter(function (x) { return x !== c.id; }); else arr = arr.concat(c.id);
-        if (arr.length) state.days[sel] = arr; else delete state.days[sel];
-        save(); render();
-      });
+      b.addEventListener('click', function () { x.done = !x.done; save(); render(); });
       li.appendChild(b);
-      if (editing) {
-        var del = el('button', 'del', '삭제');
-        del.type = 'button';
-        del.setAttribute('aria-label', c.name + ' 삭제');
-        del.addEventListener('click', function () {
-          if (del.dataset.sure !== '1') { del.dataset.sure = '1'; del.textContent = '정말?'; return; }
-          state.chores = state.chores.filter(function (x) { return x.id !== c.id; });
-          Object.keys(state.days).forEach(function (d) {
-            state.days[d] = state.days[d].filter(function (x) { return x !== c.id; });
-            if (!state.days[d].length) delete state.days[d];
-          });
-          save(); render(); toast(c.name + ' 삭제했어요');
-        });
-        li.appendChild(del);
-      }
+      var del = el('button', 'del', '✕');
+      del.type = 'button';
+      del.setAttribute('aria-label', x.name + ' 삭제');
+      del.addEventListener('click', function () {
+        if (!del.classList.contains('sure')) {
+          del.classList.add('sure'); del.textContent = '삭제';
+          setTimeout(function () { del.classList.remove('sure'); del.textContent = '✕'; }, 2500);
+          return;
+        }
+        setTasks(sel, tasks(sel).filter(function (y) { return y.id !== x.id; }));
+        save(); render(); toast(x.name + ' 삭제했어요');
+      });
+      li.appendChild(del);
       list.appendChild(li);
     });
-    document.getElementById('editToggle').textContent = editing ? '편집 끝내기' : '집안일 목록 편집';
+
+    // 빠른 추가: 자주 쓰는 이름 중 이 날 아직 없는 것
+    var sugg = document.getElementById('sugg');
+    sugg.textContent = '';
+    state.names.filter(function (n) { return !t.some(function (x) { return x.name === n; }); }).forEach(function (n) {
+      var b = el('button', null, '+ ' + n);
+      b.type = 'button';
+      b.addEventListener('click', function () { addTask(n); });
+      sugg.appendChild(b);
+    });
+  }
+
+  function addTask(name) {
+    name = name.trim();
+    if (!name) return false;
+    if (tasks(sel).some(function (x) { return x.name === name; })) { toast('이미 있는 집안일이에요'); return false; }
+    setTasks(sel, tasks(sel).concat({ id: state.next++, name: name, done: false }));
+    if (state.names.indexOf(name) === -1) state.names.push(name);
+    save(); render(); toast(fmt(sel) + '에 ' + name + ' 추가');
+    return true;
   }
 
   function render() { renderCal(); renderDay(); }
 
-  function shift(n) { view = new Date(view.getFullYear(), view.getMonth() + n, 1); renderCal(); }
-  document.getElementById('prev').addEventListener('click', function () { shift(-1); });
-  document.getElementById('next').addEventListener('click', function () { shift(1); });
-  document.getElementById('todayBtn').addEventListener('click', function () {
-    sel = iso(today()); view = today(); view.setDate(1); render();
-  });
-  document.getElementById('editToggle').addEventListener('click', function () { editing = !editing; renderDay(); });
-  document.getElementById('addForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var n = document.getElementById('newName'), name = n.value.trim();
-    if (!name) return;
-    state.chores.push({ id: state.next++, name: name });
-    save(); n.value = ''; render(); toast(name + ' 추가했어요');
+  /* ---------- 배경음악: 파일 없이 Web Audio로 직접 합성 ---------- */
+  function mf(n) { return 440 * Math.pow(2, (n - 69) / 12); }
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var audio = { ctx: null, out: null, impulse: null, noise: null, sess: null };
+
+  function ensureCtx() {
+    if (!AC) return null;
+    if (!audio.ctx) {
+      var c = audio.ctx = new AC();
+      audio.out = c.createGain();
+      audio.out.gain.value = ui.vol;
+      audio.out.connect(c.destination);
+      var n = c.sampleRate * 3.2, imp = c.createBuffer(2, n, c.sampleRate);   // 리버브용 잔향 응답
+      for (var ch = 0; ch < 2; ch++) {
+        var d = imp.getChannelData(ch);
+        for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6);
+      }
+      audio.impulse = imp;
+      var nb = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), nd = nb.getChannelData(0);
+      for (var k = 0; k < nd.length; k++) nd[k] = Math.random() * 2 - 1;
+      audio.noise = nb;
+    }
+    if (audio.ctx.state === 'suspended') audio.ctx.resume();
+    return audio.ctx;
+  }
+
+  function newSession(c) {
+    var s = { ctx: c, timers: [], srcs: [] };
+    s.master = c.createGain(); s.master.gain.value = 0;
+    s.master.gain.linearRampToValueAtTime(1, c.currentTime + 1.6);
+    s.master.connect(audio.out);
+    s.bus = c.createGain(); s.bus.connect(s.master);
+    var conv = c.createConvolver(), wet = c.createGain();
+    conv.buffer = audio.impulse; wet.gain.value = 0.55;
+    s.bus.connect(conv); conv.connect(wet); wet.connect(s.master);
+    // seq: 일정 간격(step초)으로 fn(시작시각, 번호)를 미리 예약
+    s.seq = function (step, fn) {
+      var next = c.currentTime + 0.1, i = 0;
+      s.timers.push(setInterval(function () {
+        var now = c.currentTime;
+        if (next < now - 0.2) next = now + 0.05;
+        while (next < now + 0.5) { fn(next, i++); next += step; }
+      }, 100));
+    };
+    s.tone = function (midi, t, o) {
+      var osc = c.createOscillator(), g = c.createGain(), dest = o.dest || s.bus;
+      osc.type = o.type || 'sine'; osc.frequency.value = mf(midi);
+      if (o.detune) osc.detune.value = o.detune;
+      var atk = o.atk || 0.01, dur = o.dur || 0.05, rel = o.rel || 1;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(o.vol, t + atk);
+      g.gain.setValueAtTime(o.vol, t + atk + dur);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + atk + dur + rel);
+      osc.connect(g);
+      if (o.lp) { var f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; g.connect(f); f.connect(dest); }
+      else g.connect(dest);
+      osc.start(t); osc.stop(t + atk + dur + rel + 0.05);
+    };
+    s.pad = function (notes, t, o) {
+      notes.forEach(function (n) {
+        [-7, 7].forEach(function (dt) {
+          s.tone(n, t, { type: 'sine', vol: o.vol, atk: o.atk, dur: o.dur, rel: o.rel, detune: dt, lp: o.lp });
+        });
+      });
+    };
+    s.hit = function (t, o) {   // 짧은 노이즈 (하이햇, 스네어 등)
+      var src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = audio.noise; f.type = o.type; f.frequency.value = o.freq;
+      g.gain.setValueAtTime(o.vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + o.dur);
+      src.connect(f); f.connect(g); g.connect(o.dest || s.bus);
+      src.start(t, Math.random() * 1.5); src.stop(t + o.dur + 0.05);
+    };
+    return s;
+  }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  var MUSIC = {
+    // 맑은 아침: 부드러운 패드 + 드문드문 울리는 종소리
+    mint: function (s) {
+      var ch = [[48, 52, 55, 59], [45, 52, 55, 60], [41, 48, 52, 57], [43, 50, 52, 59]];
+      s.seq(4, function (t, i) { s.pad(ch[i % 4], t, { vol: 0.035, atk: 1.4, dur: 2.2, rel: 2.6, lp: 1300 }); });
+      var pent = [72, 74, 76, 79, 81, 84];
+      s.seq(1, function (t) {
+        if (Math.random() < 0.45) {
+          var n = pick(pent), tt = t + Math.random() * 0.4;
+          s.tone(n, tt, { vol: 0.06, atk: 0.005, dur: 0.05, rel: 1.9 });
+          s.tone(n + 12, tt, { vol: 0.012, atk: 0.005, dur: 0.02, rel: 1.0 });
+        }
+      });
+    },
+    // 카페 오후: 느린 로파이 비트 + 코드 아르페지오
+    cream: function (s) {
+      var ch = [
+        { b: 41, n: [57, 60, 64, 69] }, { b: 40, n: [55, 59, 62, 67] },
+        { b: 38, n: [53, 57, 60, 65] }, { b: 36, n: [52, 55, 59, 64] }
+      ];
+      var arp = [0, 2, 1, 3, 2, 1, 3, 1];
+      s.seq(0.395, function (t, i) {
+        var c = ch[Math.floor(i / 16) % 4], k = i % 8, tt = t + (i % 2 ? 0.035 : 0);   // 스윙
+        if (i % 16 === 0) s.pad(c.n, t, { vol: 0.022, atk: 0.4, dur: 4.6, rel: 1.8, lp: 1500 });
+        s.tone(c.n[arp[k]] + 12, tt, { type: 'triangle', vol: 0.05, atk: 0.008, dur: 0.03, rel: 0.9 });
+        if (k === 0 || k === 5) s.tone(c.b, t, { vol: 0.13, atk: 0.01, dur: 0.35, rel: 0.4 });
+        if (k === 0) {   // 킥
+          var o = s.ctx.createOscillator(), g = s.ctx.createGain();
+          o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.13);
+          g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+          o.connect(g); g.connect(s.master); o.start(t); o.stop(t + 0.25);
+        }
+        if (k === 4) s.hit(t, { type: 'bandpass', freq: 1800, vol: 0.035, dur: 0.12 });
+        if (i % 2) s.hit(tt, { type: 'highpass', freq: 6500, vol: 0.018, dur: 0.05, dest: s.master });
+      });
+    },
+    // 별밤: 깊은 패드 + 긴 여운의 별빛 종소리 (딜레이)
+    night: function (s) {
+      var c = s.ctx, dl = c.createDelay(1), fb = c.createGain(), wet = c.createGain();
+      dl.delayTime.value = 0.52; fb.gain.value = 0.38; wet.gain.value = 0.5;
+      s.bus.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(s.master);
+      var ch = [[45, 52, 55, 59, 62], [41, 48, 52, 55, 59], [48, 55, 59, 62, 64]];
+      s.seq(6, function (t, i) { s.pad(ch[i % 3], t, { vol: 0.03, atk: 2.4, dur: 2.2, rel: 3.6, lp: 900 }); });
+      var pent = [81, 84, 86, 88, 91];
+      s.seq(1.3, function (t) {
+        if (Math.random() < 0.5) s.tone(pick(pent), t + Math.random() * 0.5, { vol: 0.045, atk: 0.01, dur: 0.05, rel: 3.2 });
+      });
+    },
+    // 비 오는 숲: 빗소리 + 낮은 울림 + 가끔 울리는 현
+    forest: function (s) {
+      var c = s.ctx;
+      function loopNoise(type, freq, q, vol) {
+        var src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        src.buffer = audio.noise; src.loop = true;
+        f.type = type; f.frequency.value = freq; f.Q.value = q; g.gain.value = vol;
+        src.connect(f); f.connect(g); g.connect(s.master);
+        src.start(); s.srcs.push(src);
+        return g;
+      }
+      loopNoise('bandpass', 1700, 0.5, 0.2);
+      var rumble = loopNoise('lowpass', 450, 0.7, 0.28);
+      var lfo = c.createOscillator(), lg = c.createGain();   // 빗줄기 세기가 천천히 변하게
+      lfo.frequency.value = 0.07; lg.gain.value = 0.08; lfo.connect(lg); lg.connect(rumble.gain); lfo.start(); s.srcs.push(lfo);
+      var drone = c.createOscillator(), dg = c.createGain();
+      drone.frequency.value = mf(38); dg.gain.value = 0.03; drone.connect(dg); dg.connect(s.master); drone.start(); s.srcs.push(drone);
+      var pent = [62, 64, 66, 69, 71, 74];
+      s.seq(1.4, function (t) {
+        if (Math.random() < 0.32) s.tone(pick(pent), t + Math.random() * 0.6, { type: 'triangle', vol: 0.07, atk: 0.006, dur: 0.02, rel: 1.2 });
+      });
+    }
+  };
+
+  var SKINS = [
+    { id: 'mint', name: '민트 산책', emoji: '🌿', music: '맑은 아침', sw: 'linear-gradient(135deg,#d7efe8,#f3f7f1)', color: '#e9f5f1' },
+    { id: 'cream', name: '카페 오후', emoji: '☕', music: '로파이 카페', sw: 'linear-gradient(135deg,#fbecd4,#f1d4b0)', color: '#fbf1e0' },
+    { id: 'night', name: '별밤', emoji: '🌙', music: '별빛 드론', sw: 'linear-gradient(135deg,#0d1330,#2a2a6a)', color: '#0a0f26' },
+    { id: 'forest', name: '비 오는 숲', emoji: '🌧️', music: '빗소리와 현', sw: 'linear-gradient(135deg,#cfe4d6,#9bc3ab)', color: '#d6e8dc' }
+  ];
+
+  function stopSession(s) {
+    if (!s) return;
+    s.timers.forEach(clearInterval);
+    var c = s.ctx;
+    s.master.gain.cancelScheduledValues(c.currentTime);
+    s.master.gain.setValueAtTime(s.master.gain.value, c.currentTime);
+    s.master.gain.linearRampToValueAtTime(0, c.currentTime + 0.8);
+    setTimeout(function () {
+      s.srcs.forEach(function (n) { try { n.stop(); } catch (e) {} });
+      try { s.master.disconnect(); } catch (e) {}
+    }, 1000);
+  }
+  function startMusic() {
+    var c = ensureCtx();
+    if (!c) { toast('이 브라우저는 배경음악을 지원하지 않아요'); return false; }
+    stopSession(audio.sess);
+    audio.sess = newSession(c);
+    MUSIC[ui.skin](audio.sess);
+    return true;
+  }
+  function setMusic(on) {
+    if (on && !startMusic()) on = false;
+    if (!on) { stopSession(audio.sess); audio.sess = null; }
+    musicOn = on;
+    paintAudioUI();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (!audio.ctx) return;
+    if (document.hidden) audio.ctx.suspend(); else if (musicOn) audio.ctx.resume();
   });
 
+  /* ---------- skin / ui settings ---------- */
+  var ui = { skin: 'mint', vol: 0.5, clear: 38 }, musicOn = false;   // clear: 카드 투명도 1~100 (클수록 투명)
+  try {
+    var u = JSON.parse(localStorage.getItem(UIKEY));
+    if (u) {
+      if (MUSIC[u.skin]) ui.skin = u.skin;
+      if (typeof u.vol === 'number') ui.vol = Math.min(1, Math.max(0, u.vol));
+      if (typeof u.clear === 'number') ui.clear = Math.min(100, Math.max(1, Math.round(u.clear)));
+    }
+  } catch (e) {}
+  function saveUI() { try { localStorage.setItem(UIKEY, JSON.stringify(ui)); } catch (e) {} }
+
+  function paintAudioUI() {
+    var b = document.getElementById('soundBtn');
+    b.textContent = musicOn ? '🔊' : '🔇';
+    b.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
+    b.setAttribute('aria-label', musicOn ? '배경음악 끄기' : '배경음악 켜기');
+    var m = document.getElementById('musicBtn');
+    m.textContent = musicOn ? '♪ 음악 끄기' : '♪ 음악 켜기';
+    m.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
+  }
+  function applySkin(id, announce) {
+    ui.skin = id; saveUI();
+    var sk = SKINS.filter(function (x) { return x.id === id; })[0];
+    document.documentElement.setAttribute('data-skin', id);
+    document.getElementById('themeColor').setAttribute('content', sk.color);
+    Array.prototype.forEach.call(document.querySelectorAll('.skin'), function (b) { b.setAttribute('aria-pressed', b.dataset.id === id ? 'true' : 'false'); });
+    loadPhoto(id);
+    if (musicOn) startMusic();   // 음악이 켜져 있으면 새 스킨 음악으로 바꿔서 재생
+    if (announce) toast(sk.name + ' 적용');
+  }
+  (function buildSkins() {
+    var box = document.getElementById('skins');
+    SKINS.forEach(function (sk) {
+      var b = el('button', 'skin');
+      b.type = 'button'; b.dataset.id = sk.id;
+      var sw = el('div', 'sw', sk.emoji); sw.style.background = sk.sw;
+      b.appendChild(sw);
+      b.appendChild(el('b', null, sk.name));
+      b.appendChild(el('small', null, '♪ ' + sk.music));
+      b.addEventListener('click', function () { applySkin(sk.id, true); });
+      box.appendChild(b);
+    });
+  })();
+  /* ---------- 사진 배경: 내가 고른 사진(IndexedDB) → backgrounds/<스킨>.jpg → 일러스트 순서로 사용 ---------- */
+  var photoEl = document.getElementById('photo'), photoTok = 0, photoUrl = null, hasCustom = false;
+  function idbOp(mode, fn) {
+    return new Promise(function (res, rej) {
+      if (!window.indexedDB) return rej(new Error('no idb'));
+      var r = indexedDB.open('housework-bg', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('bg'); };
+      r.onerror = function () { rej(r.error); };
+      r.onsuccess = function () {
+        var db = r.result, tx = db.transaction('bg', mode), rq = fn(tx.objectStore('bg'));
+        tx.oncomplete = function () { db.close(); res(rq && rq.result); };
+        tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+      };
+    });
+  }
+  function showPhoto(url, custom, isBlob) {
+    if (photoUrl) { URL.revokeObjectURL(photoUrl); photoUrl = null; }
+    if (isBlob) photoUrl = url;
+    hasCustom = !!custom;
+    photoEl.style.backgroundImage = url ? 'linear-gradient(rgba(0,0,0,var(--dim)), rgba(0,0,0,var(--dim))), url("' + url + '")' : '';
+    if (url) document.documentElement.setAttribute('data-photo', '1'); else document.documentElement.removeAttribute('data-photo');
+    document.getElementById('photoReset').hidden = !custom;
+  }
+  function loadPhoto(id) {
+    var tok = ++photoTok;
+    function bundled() {
+      var path = 'backgrounds/' + id + '.jpg', img = new Image();
+      img.onload = function () { if (tok === photoTok) showPhoto(path, false); };
+      img.onerror = function () { if (tok === photoTok) showPhoto(null, false); };
+      img.src = path;
+    }
+    idbOp('readonly', function (st) { return st.get(id); }).then(function (blob) {
+      if (tok !== photoTok) return;
+      if (blob) showPhoto(URL.createObjectURL(blob), true, true); else bundled();
+    }, bundled);
+  }
+  // 폰 사진은 크니까 긴 변 1600px로 줄여서 저장
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        cv.toBlob(function (b) { b ? res(b) : rej(new Error('encode')); }, 'image/jpeg', 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  var photoFile = document.getElementById('photoFile');
+  document.getElementById('photoBtn').addEventListener('click', function () { photoFile.click(); });
+  photoFile.addEventListener('change', function () {
+    var f = photoFile.files && photoFile.files[0], id = ui.skin;
+    photoFile.value = '';
+    if (!f) return;
+    shrink(f).then(function (blob) {
+      return idbOp('readwrite', function (st) { return st.put(blob, id); });
+    }).then(function () { if (id === ui.skin) loadPhoto(id); toast('내 사진으로 바꿨어요'); },
+      function () { toast('사진을 저장하지 못했어요'); });
+  });
+  document.getElementById('photoReset').addEventListener('click', function () {
+    var id = ui.skin;
+    idbOp('readwrite', function (st) { return st.delete(id); }).then(function () { if (id === ui.skin) loadPhoto(id); toast('기본 배경으로 되돌렸어요'); }, function () {});
+  });
+
+  var clearEl = document.getElementById('clear');
+  function applyClear() {
+    document.documentElement.style.setProperty('--alpha', (1 - ui.clear / 100).toFixed(2));
+    document.getElementById('clearVal').textContent = ui.clear;
+    clearEl.setAttribute('aria-valuetext', '투명도 ' + ui.clear);
+  }
+  clearEl.value = ui.clear;
+  clearEl.addEventListener('input', function () { ui.clear = +clearEl.value; applyClear(); saveUI(); });
+  applyClear();
+
+  var vol = document.getElementById('vol');
+  vol.value = Math.round(ui.vol * 100);
+  vol.addEventListener('input', function () {
+    ui.vol = vol.value / 100; saveUI();
+    if (audio.out) audio.out.gain.setTargetAtTime(ui.vol, audio.ctx.currentTime, 0.05);
+  });
+  document.getElementById('musicBtn').addEventListener('click', function () { setMusic(!musicOn); });
+  document.getElementById('soundBtn').addEventListener('click', function () { setMusic(!musicOn); });
+  document.getElementById('skinBtn').addEventListener('click', function () { openSheet('skin'); });
+
+  /* ---------- wiring ---------- */
+  document.getElementById('prev').addEventListener('click', function () { shift(-1); });
+  document.getElementById('next').addEventListener('click', function () { shift(1); });
+  document.getElementById('todayBtn').addEventListener('click', function () { sel = iso(today()); render(); });
+  document.getElementById('mWeek').addEventListener('click', function () { setMode('week'); });
+  document.getElementById('mMonth').addEventListener('click', function () { setMode('month'); });
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = document.getElementById('newName');
+    if (addTask(n.value)) n.value = '';
+  });
+
+  // 달력을 좌우로 밀어서 이전/다음 이동
+  var sx = 0, sy = 0;
+  var cal = document.getElementById('cal');
+  cal.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  cal.addEventListener('touchend', function (e) {
+    var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dy) < 40) shift(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  // 풍경 속 소나무 숲: 층마다 크기와 위치를 (고정된 난수로) 흩뿌려 그림
+  (function buildPines() {
+    var CONF = {   // baseY, 나무 높이, 색, 그루 수, 시드, 투명도
+      'night-mid': [650, 70, '#141846', 9, 3, 1],
+      'night-near': [745, 110, '#080b26', 7, 5, 1],
+      'forest-1': [600, 110, '#a9cbb7', 8, 1, 0.85],
+      'forest-2': [680, 130, '#7aae92', 7, 2, 1],
+      'forest-3': [760, 140, '#447f5f', 6, 3, 1],
+      'forest-4': [800, 115, '#27573f', 5, 4, 1]
+    };
+    function rng(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+    Array.prototype.forEach.call(document.querySelectorAll('[data-pines]'), function (g) {
+      var c = CONF[g.getAttribute('data-pines')];
+      if (!c) return;
+      var rand = rng(c[4]), d = '', n = c[3];
+      for (var i = 0; i < n; i++) {
+        var x = (i + 0.2 + rand() * 0.6) * 400 / n, s = c[1] * (0.7 + rand() * 0.5), w = s * 0.5;
+        var top = c[0] - s, h1 = w * 0.28, h2 = w * 0.42, h3 = w * 0.55;
+        d += 'M' + x + ' ' + top +
+          'L' + (x + h1) + ' ' + (top + s * 0.34) + 'L' + (x + h1 * 0.55) + ' ' + (top + s * 0.34) +
+          'L' + (x + h2) + ' ' + (top + s * 0.64) + 'L' + (x + h2 * 0.55) + ' ' + (top + s * 0.64) +
+          'L' + (x + h3) + ' ' + (top + s * 0.95) + 'L' + (x - h3) + ' ' + (top + s * 0.95) +
+          'L' + (x - h2 * 0.55) + ' ' + (top + s * 0.64) + 'L' + (x - h2) + ' ' + (top + s * 0.64) +
+          'L' + (x - h1 * 0.55) + ' ' + (top + s * 0.34) + 'L' + (x - h1) + ' ' + (top + s * 0.34) + 'Z';
+      }
+      d += 'M0 ' + (c[0] - 4) + 'H400V800H0Z';
+      var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d); p.setAttribute('fill', c[2]); p.setAttribute('opacity', c[5]);
+      g.appendChild(p);
+    });
+  })();
+
+  applySkin(ui.skin, false);
+  paintAudioUI();
   render();
+
+  // 앱을 다시 열었을 때(자정 지남 등) 오늘 날짜 표시를 갱신
+  document.body.dataset.day = iso(today());
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && iso(today()) !== document.body.dataset.day) {
+      document.body.dataset.day = iso(today());
+      render();
+    }
+  });
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
 })();
 </script>
+</body>
+</html>
