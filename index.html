@@ -153,10 +153,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .day.done .num { color: var(--accent-fg); }
 .day.today .num { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .day.sel { box-shadow: 0 0 0 2px var(--fg); }
-.dots { display: flex; gap: 3px; height: 7px; }
-.dots i { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--muted); }
-.dots i.d { background: var(--accent); box-shadow: none; }
-.day.done .dots i.d { background: var(--accent-fg); }
+.icons { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1px; max-width: 100%; min-height: 14px; font-size: 12px; line-height: 1; }
+.icons .p { opacity: .4; filter: grayscale(1); }   /* 아직 안 한 일은 흐린 흑백 */
+.icons em { font-style: normal; font-size: 10px; color: var(--muted); }
+.day.done .icons em { color: var(--accent-fg); }
 
 /* week rows */
 .week { flex: 1; display: flex; flex-direction: column; gap: 6px; }
@@ -215,6 +215,39 @@ ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: col
 .add { display: flex; gap: 8px; }
 input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가 입력 시 화면을 확대함 */ color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-height: 44px; min-width: 0; flex: 1; }
 .add button { flex: none; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
+.badge { flex: none; width: 44px; height: 44px; padding: 0; border-radius: 12px; border: 1px solid var(--line); font-size: 22px; line-height: 1; }
+.pal { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.pgrid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.pgrid button { height: 38px; padding: 0; border-radius: 8px; border: 1px solid transparent; background: none; font-size: 20px; }
+.pgrid button.on { border-color: var(--accent); background: var(--accent-soft); }
+.crow { display: flex; justify-content: space-between; gap: 6px; }
+.crow button { width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 2px solid transparent; }
+.crow button.on { border-color: var(--fg); }
+.sugg-head { display: flex; align-items: center; justify-content: space-between; }
+.sugg-head span { font-size: 12px; color: var(--muted); }
+.edit-toggle { background: none; border: 0; color: var(--muted); font-size: 13px; min-height: 32px; padding: 0 6px; }
+.sugg button.rm { border-style: solid; color: var(--sun); border-color: var(--sun); }
+.dock { display: flex; gap: 8px; }
+.dockbtn { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14px; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.nbadge { display: inline-block; margin-left: 6px; min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--sun); color: #fff; font-size: 12px; line-height: 20px; }
+#importMsg { white-space: pre-line; font-size: 14px; }
+.hero { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 14px 12px; text-align: center; }
+.hero b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 26px; line-height: 1.25; }
+.hero span { font-size: 14px; opacity: .92; }
+.sheet h3 { margin: 6px 0 0; font-size: 14px; color: var(--muted); font-weight: 700; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; }
+.card b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 24px; line-height: 1.2; color: var(--accent); }
+.card span { font-size: 12px; color: var(--muted); }
+.trow { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
+.trow .nm { grid-column: 2; font-size: 14px; }
+.tbar { grid-column: 2; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.tbar i { display: block; height: 100%; background: var(--accent); }
+.srow { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.srow .ic { font-size: 22px; }
+.srow .txt { flex: 1; min-width: 0; }
+.srow button { flex: none; min-height: 36px; padding: 0 12px; border-radius: 99px; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 13px; }
+.opac select { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
 .sugg { display: flex; flex-wrap: wrap; gap: 6px; }
 .sugg button { min-height: 34px; padding: 0 12px; border-radius: 99px; border: 1px dashed var(--muted); background: none; font-size: 13px; color: var(--muted); }
 .empty { color: var(--muted); font-size: 14px; }
@@ -245,8 +278,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   <div class="top">
     <h1>집안일 기록장</h1>
     <div class="tools">
-      <button type="button" class="ibtn" id="skinBtn" aria-label="꾸미기 (배경·음악)">🎨</button>
-      <button type="button" class="ibtn" id="soundBtn" aria-pressed="false" aria-label="배경음악 켜기">🔇</button>
+      <button type="button" class="ibtn" id="skinBtn" aria-label="설정">⚙️</button>
       <div class="seg" role="group" aria-label="보기 방식">
         <button type="button" id="mWeek" aria-pressed="false">주</button>
         <button type="button" id="mMonth" aria-pressed="true">월</button>
@@ -265,6 +297,10 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     </div>
     <div id="calBody"></div>
   </section>
+
+  <div class="dock">
+    <button type="button" class="dockbtn" id="statsBtn">🏆 내가 해낸 일 보기<span class="nbadge" id="staleN" hidden></span></button>
+  </div>
 </main>
 
 <div class="photo" id="photo" aria-hidden="true"></div>
@@ -401,15 +437,38 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     <input type="text" id="newName" placeholder="이 날 할 집안일 추가" maxlength="30" aria-label="집안일 이름">
     <button type="submit">추가</button>
   </form>
+  <div class="sugg-head"><span id="suggLabel">자주 하는 집안일</span><button type="button" class="edit-toggle" id="suggEdit">목록 편집</button></div>
   <div class="sugg" id="sugg"></div>
+</section>
+
+<section class="sheet" id="statsSheet" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="panel-head">
+    <h2 id="statsTitle">🏆 내가 해낸 일</h2>
+    <div class="ph-btns">
+      <button type="button" id="smPrev" aria-label="이전 달">‹</button>
+      <button type="button" id="smNext" aria-label="다음 달">›</button>
+      <button type="button" data-close aria-label="닫기">✕</button>
+    </div>
+  </div>
+  <div class="count" id="smonth"></div>
+  <div class="hero" id="hero"></div>
+  <div class="cards" id="cards"></div>
+  <h3>🏅 이 달의 으뜸 집안일</h3>
+  <ul id="topList"></ul>
+  <h3>🔔 슬슬 챙겨주면 좋아요</h3>
+  <div class="opac"><label for="stale">알려줄 기준</label><select id="stale"><option value="7">7일 넘게 안 했을 때</option><option value="14">14일 넘게 안 했을 때</option><option value="21">21일 넘게 안 했을 때</option><option value="30">30일 넘게 안 했을 때</option></select></div>
+  <ul id="staleList"></ul>
 </section>
 
 <section class="sheet" id="skinSheet" role="dialog" aria-modal="true" aria-labelledby="skinTitle">
   <div class="grab" aria-hidden="true"></div>
   <div class="panel-head">
-    <h2 id="skinTitle">꾸미기</h2>
+    <h2 id="skinTitle">⚙️ 설정</h2>
     <div class="ph-btns"><button type="button" data-close aria-label="닫기">✕</button></div>
   </div>
+
+  <h3>🎨 배경과 분위기</h3>
   <div class="skins" id="skins"></div>
   <div class="opac">
     <label for="clear">카드 투명도 <b id="clearVal"></b></label>
@@ -420,11 +479,29 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     <button type="button" class="mbtn" id="photoReset" hidden>기본 배경으로</button>
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
+
+  <h3>🎵 음악</h3>
   <div class="music">
     <button type="button" class="mbtn" id="musicBtn" aria-pressed="false">♪ 음악 켜기</button>
     <input type="range" id="vol" min="0" max="100" step="1" aria-label="음악 볼륨">
   </div>
   <p class="hint">음악은 앱이 직접 만들어 재생해서 따로 받은 파일이 없습니다. 폰이 무음 모드면 소리가 안 날 수 있어요.</p>
+
+  <h3>💾 내 기록 보관하기</h3>
+  <div class="count" id="dataInfo"></div>
+  <div class="photo-row">
+    <button type="button" class="mbtn" id="exportBtn">⬇️ 내보내기</button>
+    <button type="button" class="mbtn" id="importBtn">⬆️ 가져오기</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+  </div>
+  <div class="pal" id="importBox" hidden>
+    <div id="importMsg"></div>
+    <div class="photo-row">
+      <button type="button" class="mbtn" id="importOk">지금 기록 덮어쓰기</button>
+      <button type="button" class="mbtn" id="importCancel">취소</button>
+    </div>
+  </div>
+  <p class="hint">폰을 바꾸거나 PC와 폰 사이에 기록을 옮길 때 쓰세요. 가져오면 지금 기록이 덮어써지니, 먼저 내보내기로 파일을 만들어 두는 걸 권합니다.</p>
 </section>
 
 <div class="toast" id="toast" hidden></div>
@@ -445,8 +522,9 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
   function fmt(s) { var d = parse(s); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + WD[d.getDay()] + ')'; }
 
-  // state: { next, mode:'month'|'week', names:[suggestions], days:{ 'YYYY-MM-DD': [{id,name,done}] } }
-  function fresh() { return { next: 1, mode: 'month', names: DEFAULTS.slice(), days: {} }; }
+  // state: { next, mode:'month'|'week', names:[suggestions], meta:{ name: {icon,color} }, days:{ 'YYYY-MM-DD': [{id,name,done}] } }
+  function fresh() { return { next: 1, mode: 'month', names: DEFAULTS.slice(), meta: {}, days: {} }; }
+  function ymd(s) { var p = s.split('-'); return { y: +p[0], m: +p[1], d: +p[2] }; }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
@@ -466,7 +544,9 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     return mem || fresh();
   }
   var state = load();
+  if (!state.meta) state.meta = {};
   var sel = iso(today());
+  var editingIcon = null, editSugg = false;   // 아이콘 고르는 중인 집안일 이름 / 빠른 추가 목록 편집 중 여부
 
   function save() {
     mem = state;
@@ -483,6 +563,27 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     t.textContent = msg; t.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { t.hidden = true; }, 2000);
+  }
+
+  /* ---------- 집안일별 아이콘/색 ---------- */
+  var ICONS = ['🧺', '🧼', '🧹', '🧽', '🚽', '🛁', '🛏️', '🪟', '🗑️', '🍽️', '🍳', '🧊', '🪴', '🛒', '📦', '👕', '🐾', '🧴', '🚿', '🔧', '🚗', '💧', '🧦', '🏠'];
+  var COLORS = ['#e57373', '#f0a35e', '#e3bd3c', '#5fbf80', '#4fb0d6', '#8f86e0', '#d884ba', '#8b9a99'];
+  var GUESS = [[/침구|이불/, '🛏️'], [/빨래|세탁|옷/, '🧺'], [/화장실|변기/, '🚽'], [/욕실|샤워|목욕/, '🛁'], [/바닥|청소기|먼지|쓸/, '🧹'], [/걸레|닦/, '🧽'],
+    [/쓰레기|분리수거|재활용/, '🗑️'], [/설거지|싱크|그릇/, '🍽️'], [/냉장고|유통기한/, '🧊'], [/요리|밥|식사/, '🍳'], [/화분|식물|물주기/, '🪴'],
+    [/장보기|마트|쇼핑/, '🛒'], [/창문|유리/, '🪟'], [/정리|수납/, '📦'], [/강아지|고양이|반려|산책/, '🐾'], [/세차|차량/, '🚗']];
+  function metaOf(name) {
+    var m = state.meta[name] || {}, icon = m.icon, h = 0, i;
+    if (!icon) {
+      icon = '🏠';
+      for (i = 0; i < GUESS.length; i++) if (GUESS[i][0].test(name)) { icon = GUESS[i][1]; break; }
+    }
+    for (i = 0; i < name.length; i++) h += name.charCodeAt(i);
+    return { icon: icon, color: m.color || COLORS[h % COLORS.length] };
+  }
+  function setMeta(name, patch) {
+    var m = state.meta[name] = state.meta[name] || {};
+    Object.keys(patch).forEach(function (k) { m[k] = patch[k]; });
+    save(); render();
   }
 
   function tasks(s) { return state.days[s] || []; }
@@ -530,9 +631,10 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
       btn.type = 'button';
       btn.setAttribute('aria-label', label(s));
       btn.appendChild(el('span', 'num', String(n)));
-      var dots = el('span', 'dots');
-      t.slice(0, 4).forEach(function (x) { dots.appendChild(el('i', x.done ? 'd' : '')); });
-      btn.appendChild(dots);
+      var ic = el('span', 'icons');
+      t.slice(0, 3).forEach(function (x) { ic.appendChild(el('span', x.done ? '' : 'p', metaOf(x.name).icon)); });
+      if (t.length > 3) ic.appendChild(el('em', null, '+' + (t.length - 3)));
+      btn.appendChild(ic);
       (function (s2) { btn.addEventListener('click', function () { choose(s2); }); })(s);
       grid.appendChild(btn);
     }
@@ -552,7 +654,11 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
       row.appendChild(dt);
       var chips = el('div', 'chips');
       if (!t.length) chips.appendChild(el('span', 'none', '집안일 없음'));
-      t.forEach(function (x) { chips.appendChild(el('span', 'chip' + (x.done ? ' d' : ''), x.name)); });
+      t.forEach(function (x) {
+        var m = metaOf(x.name), chip = el('span', 'chip' + (x.done ? ' d' : ''), m.icon + ' ' + x.name);
+        if (!x.done) chip.style.borderColor = m.color;
+        chips.appendChild(chip);
+      });
       row.appendChild(chips);
       (function (s2) { row.addEventListener('click', function () { choose(s2); }); })(s);
       wrap.appendChild(row);
@@ -588,7 +694,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   function setMode(m) { state.mode = m; save(); render(); }
 
   /* ---------- bottom sheets ---------- */
-  var sheets = { day: document.getElementById('daySheet'), skin: document.getElementById('skinSheet') };
+  var sheets = { day: document.getElementById('daySheet'), skin: document.getElementById('skinSheet'), stats: document.getElementById('statsSheet') };
   var scrim = document.getElementById('scrim'), current = null;
   function openSheet(name) {
     if (current) return;
@@ -624,7 +730,14 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     list.textContent = '';
     if (!t.length) list.appendChild(el('li', 'empty', '이 날 할 집안일을 아래에서 추가해 보세요.'));
     t.forEach(function (x) {
-      var li = el('li', 'item');
+      var li = el('li', 'item'), m = metaOf(x.name);
+      var badge = el('button', 'badge', m.icon);
+      badge.type = 'button';
+      badge.style.background = m.color + '33';
+      badge.setAttribute('aria-label', x.name + ' 아이콘·색 바꾸기');
+      badge.setAttribute('aria-expanded', editingIcon === x.name ? 'true' : 'false');
+      badge.addEventListener('click', function () { editingIcon = editingIcon === x.name ? null : x.name; renderDay(); });
+      li.appendChild(badge);
       var b = el('button', 'check');
       b.type = 'button';
       b.setAttribute('aria-pressed', x.done ? 'true' : 'false');
@@ -649,30 +762,221 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
       });
       li.appendChild(del);
       list.appendChild(li);
+      if (editingIcon === x.name) list.appendChild(palette(x.name));
     });
 
-    // 빠른 추가: 자주 쓰는 이름 중 이 날 아직 없는 것
+    // 빠른 추가: 자주 쓰는 이름 (편집 중이면 누르면 목록에서 빠짐)
     var sugg = document.getElementById('sugg');
     sugg.textContent = '';
-    state.names.filter(function (n) { return !t.some(function (x) { return x.name === n; }); }).forEach(function (n) {
-      var b = el('button', null, '+ ' + n);
+    state.names.filter(function (n) { return editSugg || !t.some(function (x) { return x.name === n; }); }).forEach(function (n) {
+      var b = el('button', editSugg ? 'rm' : null, (editSugg ? '✕ ' : '+ ') + metaOf(n).icon + ' ' + n);
       b.type = 'button';
-      b.addEventListener('click', function () { addTask(n); });
+      b.addEventListener('click', function () {
+        if (editSugg) {
+          state.names = state.names.filter(function (x) { return x !== n; });
+          save(); renderDay(); toast(n + ' 목록에서 뺐어요 (기록은 그대로)');
+        } else addTask(n);
+      });
       sugg.appendChild(b);
     });
+    if (editSugg && !state.names.length) sugg.appendChild(el('span', 'empty', '목록이 비었어요. 위에서 집안일을 추가하면 다시 생겨요.'));
+    document.getElementById('suggEdit').textContent = editSugg ? '편집 끝내기' : '목록 편집';
+    document.getElementById('suggLabel').textContent = editSugg ? '눌러서 목록에서 빼기' : '자주 하는 집안일';
   }
 
-  function addTask(name) {
+  function palette(name) {
+    var li = el('li', 'pal'), cur = metaOf(name), grid = el('div', 'pgrid'), row = el('div', 'crow');
+    ICONS.forEach(function (ic) {
+      var b = el('button', ic === cur.icon ? 'on' : '', ic);
+      b.type = 'button'; b.setAttribute('aria-label', ic);
+      b.addEventListener('click', function () { setMeta(name, { icon: ic }); });
+      grid.appendChild(b);
+    });
+    COLORS.forEach(function (col) {
+      var b = el('button', col === cur.color ? 'on' : '');
+      b.type = 'button'; b.style.background = col; b.setAttribute('aria-label', '색 ' + col);
+      b.addEventListener('click', function () { setMeta(name, { color: col }); });
+      row.appendChild(b);
+    });
+    li.appendChild(grid); li.appendChild(row);
+    return li;
+  }
+
+  function addTaskOn(date, name) {
     name = name.trim();
     if (!name) return false;
-    if (tasks(sel).some(function (x) { return x.name === name; })) { toast('이미 있는 집안일이에요'); return false; }
-    setTasks(sel, tasks(sel).concat({ id: state.next++, name: name, done: false }));
+    if (tasks(date).some(function (x) { return x.name === name; })) { toast('이미 있는 집안일이에요'); return false; }
+    setTasks(date, tasks(date).concat({ id: state.next++, name: name, done: false }));
     if (state.names.indexOf(name) === -1) state.names.push(name);
-    save(); render(); toast(fmt(sel) + '에 ' + name + ' 추가');
+    save(); render(); toast(fmt(date) + '에 ' + name + ' 추가');
     return true;
   }
+  function addTask(name) { return addTaskOn(sel, name); }
 
-  function render() { renderCal(); renderDay(); }
+  function render() { renderCal(); renderDay(); updateStale(); }
+
+  /* ---------- 통계 / 오래 안 한 집안일 ---------- */
+  var statMonth = null;
+  function streaks() {
+    var set = {}, t = today(), cur = 0, d = t;
+    Object.keys(state.days).forEach(function (k) { if (state.days[k].some(function (x) { return x.done; })) set[k] = 1; });
+    if (!set[iso(d)]) d = addDays(d, -1);   // 오늘 아직 안 했어도 어제까지 이어졌으면 연속 유지
+    while (set[iso(d)]) { cur++; d = addDays(d, -1); }
+    var best = 0, run = 0, prev = null;
+    Object.keys(set).sort().forEach(function (k) {
+      run = prev && Math.round((parse(k) - parse(prev)) / 86400000) === 1 ? run + 1 : 1;
+      if (run > best) best = run;
+      prev = k;
+    });
+    return { cur: cur, best: best };
+  }
+  // 한 번이라도 한 적 있고, 기준일 넘게 안 했고, 오늘 이후로 예정도 없는 집안일
+  function staleList() {
+    var t = today(), ts = iso(t), last = {}, planned = {}, out = [];
+    Object.keys(state.days).forEach(function (k) {
+      state.days[k].forEach(function (x) {
+        if (x.done) { if (!last[x.name] || k > last[x.name]) last[x.name] = k; }
+        else if (k >= ts) planned[x.name] = 1;
+      });
+    });
+    Object.keys(last).forEach(function (n) {
+      if (planned[n]) return;
+      var days = Math.round((t - parse(last[n])) / 86400000);
+      if (days >= ui.stale) out.push({ name: n, days: days, last: last[n] });
+    });
+    return out.sort(function (a, b) { return b.days - a.days; });
+  }
+  function updateStale() {
+    var n = staleList().length, b = document.getElementById('staleN');
+    b.hidden = !n; b.textContent = '🔔 ' + n;
+  }
+  function renderStats() {
+    var y = statMonth.getFullYear(), m = statMonth.getMonth() + 1, total = 0, done = 0, days = 0, byName = {};
+    document.getElementById('smonth').textContent = y + '년 ' + m + '월';
+    Object.keys(state.days).forEach(function (k) {
+      var p = ymd(k);
+      if (p.y !== y || p.m !== m) return;
+      var dn = 0;
+      state.days[k].forEach(function (x) { total++; if (x.done) { done++; dn++; byName[x.name] = (byName[x.name] || 0) + 1; } });
+      if (dn) days++;
+    });
+    var st = streaks(), cards = document.getElementById('cards'), hero = document.getElementById('hero');
+    var cheer = !done ? '아직 기록이 없어요. 오늘 하나만 해볼까요? 🌱' : done < 5 ? '좋은 시작이에요! 👏' : done < 15 ? '꾸준하네요, 정말 멋져요! ✨' : done < 30 ? '집안일 고수예요! 🏅' : '집 안이 반짝반짝해요! 🌟';
+    hero.textContent = '';
+    hero.appendChild(el('b', null, done ? m + '월에 ' + done + '번 해냈어요!' : m + '월은 이제부터 시작!'));
+    hero.appendChild(el('span', null, cheer + (total && done ? ' (계획한 일의 ' + Math.round(done / total * 100) + '%)' : '')));
+    cards.textContent = '';
+    [[done + '번', '해낸 일'], [days + '일', '집안일 한 날'], [st.cur + '일' + (st.cur >= 3 ? ' 🔥' : ''), '연속 달성 (최고 ' + st.best + '일)']].forEach(function (c) {
+      var d = el('div', 'card'); d.appendChild(el('b', null, c[0])); d.appendChild(el('span', null, c[1])); cards.appendChild(d);
+    });
+    var top = Object.keys(byName).sort(function (a, b) { return byName[b] - byName[a]; }).slice(0, 5), tl = document.getElementById('topList');
+    tl.textContent = '';
+    if (!top.length) tl.appendChild(el('li', 'empty', '집안일을 끝내면 여기에 으뜸 집안일이 나타나요.'));
+    top.forEach(function (n) {
+      var li = el('li', 'trow'), bar = el('div', 'tbar'), fill = el('i');
+      li.appendChild(el('span', null, metaOf(n).icon));
+      li.appendChild(el('span', 'nm', n));
+      li.appendChild(el('b', null, byName[n] + '회'));
+      fill.style.width = Math.round(byName[n] / byName[top[0]] * 100) + '%';
+      bar.appendChild(fill); li.appendChild(bar);
+      tl.appendChild(li);
+    });
+    var sl = document.getElementById('staleList'), list = staleList();
+    sl.textContent = '';
+    document.getElementById('stale').value = String(ui.stale);
+    if (!list.length) sl.appendChild(el('li', 'empty', '밀린 집안일이 없어요. 완벽해요! 👍'));
+    list.forEach(function (s) {
+      var li = el('li', 'srow'), tx = el('div', 'txt'), b = el('button', null, '오늘 하기');
+      li.appendChild(el('span', 'ic', metaOf(s.name).icon));
+      tx.appendChild(el('div', 'name', s.name));
+      tx.appendChild(el('div', 'last', '마지막으로 한 지 ' + (s.days >= 14 ? Math.floor(s.days / 7) + '주(' + s.days + '일)' : s.days + '일') + ' · 오늘 해볼까요?'));
+      li.appendChild(tx);
+      b.type = 'button';
+      b.addEventListener('click', function () { if (addTaskOn(iso(today()), s.name)) renderStats(); });
+      li.appendChild(b);
+      sl.appendChild(li);
+    });
+  }
+  function openStats() { statMonth = new Date(parse(sel).getFullYear(), parse(sel).getMonth(), 1); renderStats(); openSheet('stats'); }
+  document.getElementById('statsBtn').addEventListener('click', openStats);
+  document.getElementById('smPrev').addEventListener('click', function () { statMonth = new Date(statMonth.getFullYear(), statMonth.getMonth() - 1, 1); renderStats(); });
+  document.getElementById('smNext').addEventListener('click', function () { statMonth = new Date(statMonth.getFullYear(), statMonth.getMonth() + 1, 1); renderStats(); });
+  document.getElementById('stale').addEventListener('change', function () { ui.stale = +this.value; saveUI(); updateStale(); renderStats(); });
+  document.getElementById('suggEdit').addEventListener('click', function () { editSugg = !editSugg; renderDay(); });
+
+  /* ---------- 백업: 내보내기 / 가져오기 ---------- */
+  var pending = null;
+  function counts(s) {
+    var days = Object.keys(s.days).length, n = 0;
+    Object.keys(s.days).forEach(function (k) { n += s.days[k].length; });
+    return days + '일 · 집안일 ' + n + '건';
+  }
+  // 파일 내용을 믿지 않고 형식을 하나씩 검사해서 깨끗한 상태 객체로 다시 만듦
+  function sanitize(raw) {
+    var d = raw && raw.app === 'housework' && raw.data, out = fresh(), maxId = 0;
+    if (!d || typeof d.days !== 'object' || !d.days) throw new Error('형식이 달라요');
+    Object.keys(d.days).forEach(function (k) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !Array.isArray(d.days[k])) return;
+      var arr = [];
+      d.days[k].forEach(function (x) {
+        if (!x || typeof x.name !== 'string' || !x.name.trim()) return;
+        var id = Number.isInteger(x.id) && x.id > 0 ? x.id : 0;
+        arr.push({ id: id, name: x.name.trim().slice(0, 30), done: x.done === true });
+      });
+      if (arr.length) out.days[k] = arr;
+    });
+    Object.keys(out.days).forEach(function (k) { out.days[k].forEach(function (x) { if (x.id > maxId) maxId = x.id; }); });
+    Object.keys(out.days).forEach(function (k) { out.days[k].forEach(function (x) { if (!x.id) x.id = ++maxId; }); });
+    out.next = maxId + 1;
+    if (d.mode === 'week') out.mode = 'week';
+    if (Array.isArray(d.names)) out.names = d.names.filter(function (n) { return typeof n === 'string' && n.trim(); }).map(function (n) { return n.trim().slice(0, 30); }).slice(0, 100);
+    if (d.meta && typeof d.meta === 'object') {
+      Object.keys(d.meta).slice(0, 300).forEach(function (n) {
+        var m = d.meta[n], o = {};
+        if (m && typeof m.icon === 'string' && m.icon.length <= 8) o.icon = m.icon;
+        if (m && typeof m.color === 'string' && /^#[0-9a-f]{6}$/i.test(m.color)) o.color = m.color;
+        if (o.icon || o.color) out.meta[n.slice(0, 30)] = o;
+      });
+    }
+    return out;
+  }
+  function openSettings() {
+    document.getElementById('dataInfo').textContent = '지금 기록: ' + counts(state);
+    document.getElementById('importBox').hidden = true; pending = null;
+    openSheet('skin');
+  }
+  document.getElementById('exportBtn').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify({ app: 'housework', version: 3, exported: iso(today()), data: state }, null, 1)], { type: 'application/json' });
+    var a = document.createElement('a'), url = URL.createObjectURL(blob);
+    a.href = url; a.download = 'housework-backup-' + iso(today()) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    toast('내 기록을 파일로 저장했어요');
+  });
+  var importFile = document.getElementById('importFile');
+  document.getElementById('importBtn').addEventListener('click', function () { importFile.click(); });
+  importFile.addEventListener('change', function () {
+    var f = importFile.files && importFile.files[0];
+    importFile.value = '';
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { toast('파일이 너무 커요 (5MB 이하)'); return; }
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        pending = sanitize(JSON.parse(r.result));
+        document.getElementById('importMsg').textContent = '가져올 기록: ' + counts(pending) + '\n지금 기록(' + counts(state) + ')은 사라지고 이 파일로 바뀝니다.';
+        document.getElementById('importBox').hidden = false;
+      } catch (e) { pending = null; toast('올바른 백업 파일이 아니에요'); }
+    };
+    r.onerror = function () { toast('파일을 읽지 못했어요'); };
+    r.readAsText(f);
+  });
+  document.getElementById('importCancel').addEventListener('click', function () { pending = null; document.getElementById('importBox').hidden = true; });
+  document.getElementById('importOk').addEventListener('click', function () {
+    if (!pending) return;
+    state = pending; pending = null; editingIcon = null;
+    save(); closeSheet(); render(); toast('백업을 가져왔어요');
+  });
 
   /* ---------- 배경음악: 파일 없이 Web Audio로 직접 합성 ---------- */
   function mf(n) { return 440 * Math.pow(2, (n - 69) / 12); }
@@ -861,22 +1165,19 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   });
 
   /* ---------- skin / ui settings ---------- */
-  var ui = { skin: 'mint', vol: 0.5, clear: 38 }, musicOn = false;   // clear: 카드 투명도 1~100 (클수록 투명)
+  var ui = { skin: 'mint', vol: 0.5, clear: 38, stale: 14 }, musicOn = false;   // clear: 카드 투명도 1~100 (클수록 투명), stale: 오래 안 한 일 기준(일)
   try {
     var u = JSON.parse(localStorage.getItem(UIKEY));
     if (u) {
       if (MUSIC[u.skin]) ui.skin = u.skin;
       if (typeof u.vol === 'number') ui.vol = Math.min(1, Math.max(0, u.vol));
       if (typeof u.clear === 'number') ui.clear = Math.min(100, Math.max(1, Math.round(u.clear)));
+      if ([7, 14, 21, 30].indexOf(u.stale) !== -1) ui.stale = u.stale;
     }
   } catch (e) {}
   function saveUI() { try { localStorage.setItem(UIKEY, JSON.stringify(ui)); } catch (e) {} }
 
   function paintAudioUI() {
-    var b = document.getElementById('soundBtn');
-    b.textContent = musicOn ? '🔊' : '🔇';
-    b.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
-    b.setAttribute('aria-label', musicOn ? '배경음악 끄기' : '배경음악 켜기');
     var m = document.getElementById('musicBtn');
     m.textContent = musicOn ? '♪ 음악 끄기' : '♪ 음악 켜기';
     m.setAttribute('aria-pressed', musicOn ? 'true' : 'false');
@@ -989,8 +1290,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     if (audio.out) audio.out.gain.setTargetAtTime(ui.vol, audio.ctx.currentTime, 0.05);
   });
   document.getElementById('musicBtn').addEventListener('click', function () { setMusic(!musicOn); });
-  document.getElementById('soundBtn').addEventListener('click', function () { setMusic(!musicOn); });
-  document.getElementById('skinBtn').addEventListener('click', function () { openSheet('skin'); });
+  document.getElementById('skinBtn').addEventListener('click', openSettings);
 
   /* ---------- wiring ---------- */
   document.getElementById('prev').addEventListener('click', function () { shift(-1); });
