@@ -57,6 +57,21 @@ body {
 
 /* background decoration (behind everything) */
 body::before, body::after { content: ''; position: fixed; z-index: -1; pointer-events: none; display: none; }
+/* 사진 영역 정하기 (화면 전체가 결과 화면과 같은 틀) */
+.cropper { position: fixed; inset: 0; z-index: 50; background: #000; color: #fff; touch-action: none; }
+.cstage { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; }
+.cstage img { position: absolute; left: 0; top: 0; max-width: none; transform-origin: 0 0; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; pointer-events: none; will-change: transform; }
+.ctop, .cbar { position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(0, 0, 0, .55); }
+.ctop { top: 0; justify-content: space-between; padding-top: max(10px, env(safe-area-inset-top, 0px)); }
+.ctop span { font-size: 12px; opacity: .85; text-align: center; flex: 1; }
+.ctop button { flex: none; min-height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .4); background: none; color: #fff; font-weight: 700; }
+.ctop button.ok { background: #fff; color: #111; border-color: #fff; }
+.cbar { bottom: 0; flex-direction: column; align-items: stretch; gap: 6px; padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
+.cbar input[type="range"] { width: 100%; accent-color: #fff; }
+#cq { font-size: 14px; font-weight: 700; }
+#cq.low { color: #ffb4a8; }
+#cinfo { font-size: 12px; opacity: .75; }
+
 /* 사진 배경: backgrounds/<스킨>.jpg 또는 사용자가 고른 사진. 있으면 일러스트와 장식을 대신함 */
 .photo { --dim: .06; position: fixed; inset: 0; z-index: -2; display: none; pointer-events: none; background-size: cover; background-position: center; background-repeat: no-repeat; }
 html[data-skin="night"] .photo { --dim: .3; }
@@ -132,7 +147,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 2px; }
 .seg button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: none; font-size: 14px; font-weight: 700; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
-.cal { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; touch-action: pan-y; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.cal { flex: 1; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; touch-action: pan-y; }
 #calBody { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .cal-title { font-family: var(--f-display); font-size: 20px; }
@@ -228,7 +243,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
 .edit-toggle { background: none; border: 0; color: var(--muted); font-size: 13px; min-height: 32px; padding: 0 6px; }
 .sugg button.rm { border-style: solid; color: var(--sun); border-color: var(--sun); }
 .dock { display: flex; gap: 8px; }
-.dockbtn { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14px; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.dockbtn { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14px; }
 .nbadge { display: inline-block; margin-left: 6px; min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--sun); color: #fff; font-size: 12px; line-height: 20px; }
 #importMsg { white-space: pre-line; font-size: 14px; }
 .hero { background: var(--accent); color: var(--accent-fg); border-radius: 16px; padding: 14px 12px; text-align: center; }
@@ -503,6 +518,20 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   </div>
   <p class="hint">폰을 바꾸거나 PC와 폰 사이에 기록을 옮길 때 쓰세요. 가져오면 지금 기록이 덮어써지니, 먼저 내보내기로 파일을 만들어 두는 걸 권합니다.</p>
 </section>
+
+<div class="cropper" id="cropper" hidden role="dialog" aria-modal="true" aria-label="사진 영역 정하기">
+  <div class="cstage" id="cstage"><img id="cimg" alt=""></div>
+  <div class="ctop">
+    <button type="button" id="cCancel">취소</button>
+    <span>끌어서 위치, 두 손가락이나 슬라이더로 확대</span>
+    <button type="button" id="cOk" class="ok">완료</button>
+  </div>
+  <div class="cbar">
+    <div id="cq"></div>
+    <input type="range" id="cz" min="100" max="600" value="100" aria-label="확대">
+    <div id="cinfo"></div>
+  </div>
+</div>
 
 <div class="toast" id="toast" hidden></div>
 
@@ -1241,32 +1270,104 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
       if (blob) showPhoto(URL.createObjectURL(blob), true, true); else bundled();
     }, bundled);
   }
-  // 폰 사진은 크니까 긴 변 1600px로 줄여서 저장
-  function shrink(file) {
-    return new Promise(function (res, rej) {
-      var url = URL.createObjectURL(file), img = new Image();
-      img.onload = function () {
-        var k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
-        var cv = document.createElement('canvas');
-        cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
-        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-        URL.revokeObjectURL(url);
-        cv.toBlob(function (b) { b ? res(b) : rej(new Error('encode')); }, 'image/jpeg', 0.85);
-      };
-      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error('decode')); };
-      img.src = url;
-    });
+  // 사진 영역 정하기: 화면과 같은 비율의 틀 안에서 위치·확대를 정하고,
+  // 정한 영역만 원본 해상도 그대로(늘리지 않고) 잘라 저장한다. 긴 변 3200px, JPEG 95%.
+  var cropper = document.getElementById('cropper'), cstage = document.getElementById('cstage'), cimg = document.getElementById('cimg');
+  var cz = document.getElementById('cz'), cq = document.getElementById('cq'), cinfo = document.getElementById('cinfo');
+  var cr = { W: 0, H: 0, fw: 0, fh: 0, s0: 1, z: 1, ox: 0, oy: 0, url: null, skin: null }, cptr = {}, clast = null;
+  function cropApply() {
+    var s = cr.s0 * cr.z;
+    cr.ox = Math.min(0, Math.max(cr.fw - cr.W * s, cr.ox));
+    cr.oy = Math.min(0, Math.max(cr.fh - cr.H * s, cr.oy));
+    cimg.style.transform = 'translate(' + cr.ox + 'px,' + cr.oy + 'px) scale(' + s + ')';
+    cz.value = Math.round(cr.z * 100);
+    // 화면 픽셀 1개당 원본 픽셀이 몇 개 쓰이는지: 1 이상이면 늘려 그리지 않아 선명함
+    var q = (cr.fw / s) / (cr.fw * (window.devicePixelRatio || 1));
+    cq.className = q >= 1 ? 'good' : q >= 0.7 ? 'ok' : 'low';
+    cq.textContent = q >= 1 ? '🟢 아주 선명해요' : q >= 0.7 ? '🟡 선명해요' : '🔴 조금 흐려질 수 있어요 — 확대를 줄여 보세요';
+    cinfo.textContent = '원본 ' + cr.W + '×' + cr.H + ' · 사용 영역 ' + Math.round(cr.fw / s) + '×' + Math.round(cr.fh / s);
   }
+  function cropZoomAt(px, py, z) {
+    z = Math.min(6, Math.max(1, z));
+    var s = cr.s0 * cr.z, u = (px - cr.ox) / s, v = (py - cr.oy) / s;
+    cr.z = z; s = cr.s0 * z;
+    cr.ox = px - u * s; cr.oy = py - v * s;
+    cropApply();
+  }
+  function closeCropper() {
+    cropper.hidden = true; cptr = {}; clast = null;
+    if (cr.url) { URL.revokeObjectURL(cr.url); cr.url = null; }
+    cimg.removeAttribute('src');
+  }
+  function openCropper(file) {
+    cr.url = URL.createObjectURL(file); cr.skin = ui.skin;
+    cimg.onload = function () {
+      cr.W = cimg.naturalWidth; cr.H = cimg.naturalHeight;
+      cropper.hidden = false;
+      cr.fw = cstage.clientWidth; cr.fh = cstage.clientHeight;
+      cr.s0 = Math.max(cr.fw / cr.W, cr.fh / cr.H);
+      cimg.style.width = cr.W + 'px'; cimg.style.height = cr.H + 'px';
+      cr.z = 1; cr.ox = (cr.fw - cr.W * cr.s0) / 2; cr.oy = (cr.fh - cr.H * cr.s0) / 2;
+      cropApply();
+    };
+    cimg.onerror = function () { closeCropper(); toast('이 사진은 열 수 없어요'); };
+    cimg.src = cr.url;
+  }
+  cstage.addEventListener('pointerdown', function (e) {
+    cstage.setPointerCapture(e.pointerId);
+    cptr[e.pointerId] = { x: e.clientX, y: e.clientY };
+    clast = null;
+  });
+  cstage.addEventListener('pointermove', function (e) {
+    var p = cptr[e.pointerId];
+    if (!p) return;
+    var ids = Object.keys(cptr);
+    if (ids.length === 1) {
+      cr.ox += e.clientX - p.x; cr.oy += e.clientY - p.y;
+      p.x = e.clientX; p.y = e.clientY;
+      cropApply();
+    } else if (ids.length === 2) {   // 두 손가락: 벌리면 확대, 모으면 축소
+      p.x = e.clientX; p.y = e.clientY;
+      var a = cptr[ids[0]], b = cptr[ids[1]];
+      var d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      if (clast && clast.d > 0) {
+        cr.ox += mx - clast.mx; cr.oy += my - clast.my;
+        cropZoomAt(mx, my, cr.z * d / clast.d);
+      }
+      clast = { d: d, mx: mx, my: my };
+    }
+  });
+  function cropPtrEnd(e) { delete cptr[e.pointerId]; clast = null; }
+  cstage.addEventListener('pointerup', cropPtrEnd);
+  cstage.addEventListener('pointercancel', cropPtrEnd);
+  cstage.addEventListener('wheel', function (e) { e.preventDefault(); cropZoomAt(e.clientX, e.clientY, cr.z * (e.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
+  cz.addEventListener('input', function () { cropZoomAt(cr.fw / 2, cr.fh / 2, cz.value / 100); });
+  document.getElementById('cCancel').addEventListener('click', closeCropper);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cropper.hidden) closeCropper(); });
+  document.getElementById('cOk').addEventListener('click', function () {
+    var id = cr.skin, s = cr.s0 * cr.z, sw = cr.fw / s, sh = cr.fh / s;
+    var sx = Math.min(cr.W - sw, Math.max(0, -cr.ox / s)), sy = Math.min(cr.H - sh, Math.max(0, -cr.oy / s));
+    var k = Math.min(1, 3200 / Math.max(sw, sh));   // 원본보다 키우지 않고, 너무 크면 3200px로만 줄임
+    var cv = document.createElement('canvas'), cx;
+    cv.width = Math.max(1, Math.round(sw * k)); cv.height = Math.max(1, Math.round(sh * k));
+    cx = cv.getContext('2d');
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(cimg, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+    cv.toBlob(function (blob) {
+      if (!blob) { toast('사진을 저장하지 못했어요'); return; }
+      idbOp('readwrite', function (st) { return st.put(blob, id); }).then(function () {
+        closeCropper();
+        if (id === ui.skin) loadPhoto(id);
+        toast('내 사진으로 바꿨어요');
+      }, function () { toast('사진을 저장하지 못했어요'); });
+    }, 'image/jpeg', 0.95);
+  });
   var photoFile = document.getElementById('photoFile');
   document.getElementById('photoBtn').addEventListener('click', function () { photoFile.click(); });
   photoFile.addEventListener('change', function () {
-    var f = photoFile.files && photoFile.files[0], id = ui.skin;
+    var f = photoFile.files && photoFile.files[0];
     photoFile.value = '';
-    if (!f) return;
-    shrink(f).then(function (blob) {
-      return idbOp('readwrite', function (st) { return st.put(blob, id); });
-    }).then(function () { if (id === ui.skin) loadPhoto(id); toast('내 사진으로 바꿨어요'); },
-      function () { toast('사진을 저장하지 못했어요'); });
+    if (f) openCropper(f);
   });
   document.getElementById('photoReset').addEventListener('click', function () {
     var id = ui.skin;
