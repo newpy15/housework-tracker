@@ -285,6 +285,12 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
 .sw { height: 64px; border-radius: 9px; display: grid; place-items: center; font-size: 28px; }
 .skin b { font-size: 15px; }
 .skin small { display: block; font-size: 12px; color: var(--muted); line-height: 1.3; }
+.fonts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fbtn { text-align: left; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fbtn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.fbtn small { font-size: 11px; color: var(--muted); font-family: var(--f-body); }
+.fbtn .ft { font-size: 21px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fbtn .fb { font-size: 13px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .music { display: flex; align-items: center; gap: 12px; }
 .mbtn { flex: none; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; }
 .mbtn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
@@ -505,6 +511,10 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     <button type="button" class="mbtn" id="photoReset" hidden>기본 배경으로</button>
     <input type="file" id="photoFile" accept="image/*" hidden>
   </div>
+
+  <h3>🔤 글자체</h3>
+  <div class="fonts" id="fonts"></div>
+  <p class="hint">글자체는 인터넷에서 불러와요. 처음 한 번은 인터넷이 필요하고, 불러오지 못하면 기본 글자로 보여요.</p>
 
   <h3>🎵 음악</h3>
   <div class="music">
@@ -992,6 +1002,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     return out;
   }
   function openSettings() {
+    if (!fontsPreviewed) { fontsPreviewed = true; FONTS.forEach(function (f) { loadFontCss(f.q); }); }   // 견본 카드에 글자체가 보이도록 처음 열 때 불러옴
     document.getElementById('dataInfo').textContent = '지금 기록: ' + counts(state);
     document.getElementById('importBox').hidden = true; pending = null;
     openSheet('skin');
@@ -1216,7 +1227,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   });
 
   /* ---------- skin / ui settings ---------- */
-  var ui = { skin: 'mint', vol: 0.5, clear: 38, stale: 14 }, musicOn = false;   // clear: 카드 투명도 1~100 (클수록 투명), stale: 오래 안 한 일 기준(일)
+  var ui = { skin: 'mint', vol: 0.5, clear: 38, stale: 14, font: 'basic' }, musicOn = false;   // clear: 카드 투명도 1~100 (클수록 투명), stale: 오래 안 한 일 기준(일)
   try {
     var u = JSON.parse(localStorage.getItem(UIKEY));
     if (u) {
@@ -1224,6 +1235,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
       if (typeof u.vol === 'number') ui.vol = Math.min(1, Math.max(0, u.vol));
       if (typeof u.clear === 'number') ui.clear = Math.min(100, Math.max(1, Math.round(u.clear)));
       if ([7, 14, 21, 30].indexOf(u.stale) !== -1) ui.stale = u.stale;
+      if (typeof u.font === 'string') ui.font = u.font;   // 알 수 없는 값이면 fontById 가 기본으로 돌려줌
     }
   } catch (e) {}
   function saveUI() { try { localStorage.setItem(UIKEY, JSON.stringify(ui)); } catch (e) {} }
@@ -1406,6 +1418,53 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
   clearEl.addEventListener('input', function () { ui.clear = +clearEl.value; applyClear(); saveUI(); });
   applyClear();
 
+  /* ---------- 글자체: 제목체 + 본문체 짝. 고른 것만 구글 폰트에서 불러옴 ---------- */
+  var SYS = '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif';
+  var FONTS = [
+    { id: 'basic', name: '기본', d: 'Do Hyeon', b: 'Noto Sans KR', q: ['Do+Hyeon', 'Noto+Sans+KR:wght@400;500;700'] },
+    { id: 'round', name: '둥글둥글', d: 'Jua', b: 'Gowun Dodum', q: ['Jua', 'Gowun+Dodum'] },
+    { id: 'hand', name: '손글씨', d: 'Gamja Flower', b: 'Gowun Dodum', q: ['Gamja+Flower', 'Gowun+Dodum'] },
+    { id: 'cute', name: '통통 귀여움', d: 'Cute Font', b: 'Gowun Dodum', q: ['Cute+Font', 'Gowun+Dodum'] },
+    { id: 'clear', name: '또렷한 고딕', d: 'IBM Plex Sans KR', b: 'IBM Plex Sans KR', q: ['IBM+Plex+Sans+KR:wght@400;500;700'] },
+    { id: 'poster', name: '굵은 포스터', d: 'Black Han Sans', b: 'Noto Sans KR', q: ['Black+Han+Sans', 'Noto+Sans+KR:wght@400;500;700'] },
+    { id: 'book', name: '차분한 책', d: 'Gowun Batang', b: 'Gowun Batang', q: ['Gowun+Batang:wght@400;700'] },
+    { id: 'brush', name: '붓글씨', d: 'Yeon Sung', b: 'Noto Sans KR', q: ['Yeon+Sung', 'Noto+Sans+KR:wght@400;500;700'] },
+    { id: 'system', name: '폰 기본 글자', d: '', b: '', q: [] }
+  ];
+  var fontLoaded = {}, fontsPreviewed = false;
+  function fontById(id) { return FONTS.filter(function (f) { return f.id === id; })[0] || FONTS[0]; }
+  function loadFontCss(qs) {
+    qs.forEach(function (q) {
+      if (fontLoaded[q]) return;
+      fontLoaded[q] = true;
+      var l = document.createElement('link');
+      l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + q + '&display=swap';
+      document.head.appendChild(l);
+    });
+  }
+  function fontStack(name) { return name ? '"' + name + '", "Noto Sans KR", ' + SYS : SYS; }
+  function applyFont(id, announce) {
+    var f = fontById(id), root = document.documentElement.style;
+    ui.font = f.id; saveUI();
+    loadFontCss(f.q);
+    root.setProperty('--f-display', fontStack(f.d));
+    root.setProperty('--f-body', fontStack(f.b));
+    Array.prototype.forEach.call(document.querySelectorAll('.fbtn'), function (b) { b.setAttribute('aria-pressed', b.dataset.id === f.id ? 'true' : 'false'); });
+    if (announce) toast(f.name + ' 글자체 적용');
+  }
+  (function buildFonts() {
+    var box = document.getElementById('fonts');
+    FONTS.forEach(function (f) {
+      var b = el('button', 'fbtn');
+      b.type = 'button'; b.dataset.id = f.id;
+      var t = el('span', 'ft', '집안일 기록장'), s = el('span', 'fb', '오늘도 해냈어요 ✨');
+      t.style.fontFamily = fontStack(f.d); s.style.fontFamily = fontStack(f.b);
+      b.appendChild(t); b.appendChild(s); b.appendChild(el('small', null, f.name));
+      b.addEventListener('click', function () { applyFont(f.id, true); });
+      box.appendChild(b);
+    });
+  })();
+
   var vol = document.getElementById('vol');
   vol.value = Math.round(ui.vol * 100);
   vol.addEventListener('input', function () {
@@ -1468,6 +1527,7 @@ input[type="text"] { font: inherit; font-size: 16px; /* 16px 미만이면 iOS가
     });
   })();
 
+  applyFont(ui.font, false);
   applySkin(ui.skin, false);
   paintAudioUI();
   render();

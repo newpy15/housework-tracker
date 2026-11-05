@@ -15,7 +15,7 @@
 - **날짜별 집안일**: 날짜를 누르면 아래에서 창이 올라와 집안일을 추가하고, 눌러서 완료·미완료 체크
 - **🏆 내가 해낸 일**: 이 달에 해낸 횟수, 연속 달성, 이 달의 으뜸 집안일, 오래 안 한 집안일 알림
 - **집안일별 아이콘·색**, 자주 하는 집안일 빠른 추가
-- **⚙️ 설정**: 스킨 4종(민트 산책·카페 오후·별밤·비 오는 숲)과 배경음악, 카드 투명도, 내 사진으로 배경 바꾸기(영역 직접 선택), 내 기록 내보내기/가져오기
+- **⚙️ 설정**: 스킨 4종(민트 산책·카페 오후·별밤·비 오는 숲)과 배경음악, 카드 투명도, 내 사진으로 배경 바꾸기(영역 직접 선택), 글자체 9종 선택, 내 기록 내보내기/가져오기
 - 가입·설치 없이 브라우저에서 바로 사용, 기록은 내 기기에만 저장
 
 ## 사용 방법
@@ -51,7 +51,7 @@ A calendar-based housework tracker for phones (iOS/Android, installable to the h
 - Tap a day to add that day's chores and tap to check them off
 - "Achievements" screen: monthly count, streaks, top chores, and reminders for chores not done for a while
 - Per-chore icons and colors, quick-add list
-- Settings: 4 skins with synthesized background music, card transparency, custom photo background with a crop step, export/import of your records
+- Settings: 4 skins with synthesized background music, card transparency, custom photo background with a crop step, 9 font pairings, export/import of your records
 - No sign-up; records are stored only on your device
 
 **Tech:** HTML, CSS, JavaScript (no framework or build), localStorage/IndexedDB, Web Audio, Service Worker (PWA), GitHub Pages, Claude Code
